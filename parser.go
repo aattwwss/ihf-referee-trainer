@@ -5,11 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"regexp"
-	"strconv"
-	"strings"
 
 	"log/slog"
+
+	"github.com/aattwwss/ihf-referee-rules/token"
 )
 
 type Question struct {
@@ -33,7 +32,6 @@ func main() {
 	answerPath := flag.String("a", "./answers.txt", "Path to the file to read")
 	flag.Parse()
 
-	qTokens = []TokenType{}
 	err := isValidFile(*questionPath)
 	if err != nil {
 		slog.Error("file path is invalid", slog.String("error", err.Error()))
@@ -49,17 +47,19 @@ func main() {
 	file, _ := os.Open(*questionPath)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
-	questions := []Question{}
+	tokenizer := token.NewTokenizer()
+	tokens := []token.Token{}
 	for scanner.Scan() {
 		s := scanner.Text()
-		isPageNum, err := regexp.MatchString(strings.TrimSpace(s), "^[0-9]*$")
+		token, err := tokenizer.Tokenize(s)
 		if err != nil {
-			slog.Error("parse line error", slog.String("error", err.Error()))
+			slog.Error("tokenise error", slog.String("error", err.Error()))
 			return
 		}
-		if isPageNum {
-			pageNumber, _ := strconv.Atoi(strings.TrimSpace(s))
-		}
+		tokens = append(tokens, *token)
+	}
+	for _, token := range tokens {
+		fmt.Printf("%-18s %s\n", token.Type.String(), token.Value)
 	}
 }
 
@@ -75,12 +75,4 @@ func isValidFile(filePath string) error {
 		return err
 	}
 	return nil
-}
-
-func tokenise(line string) (*TokenType, error) {
-	isPageNum, err := regexp.MatchString(strings.TrimSpace(line), "^[0-9]*$")
-	if err != nil {
-		slog.Error("parse line error", slog.String("error", err.Error()))
-		return nil, fmt.Errorf("tokenise: failed to parse page number: %w", err)
-	}
 }
