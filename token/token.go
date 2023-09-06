@@ -59,6 +59,7 @@ func NewTokenizer() Tokenizer {
 	}
 
 	// line starts with the rule number and question number follow by a close bracket
+	// also account for the Substitution Area Regulator that starts with "SAR"
 	// e.g. 12.34) some other text
 	questionStartMatcher := func(s string) bool {
 		s = strings.TrimSpace(s)
