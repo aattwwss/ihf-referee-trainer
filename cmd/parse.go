@@ -6,31 +6,36 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/aattwwss/ihf-referee-rules/parser"
 	"github.com/aattwwss/ihf-referee-rules/token"
 	"golang.org/x/exp/slog"
 )
 
+const (
+	QUESTION_DOC_TYPE = "QUESTION"
+	ANSWER_DOC_TYPE   = "ANSWER"
+)
+
 func main() {
 	// Define a flag for the file path, with a default value of the current directory.
-	questionPath := flag.String("q", "./questions.txt", "Path to the file to read")
-	answerPath := flag.String("a", "./answers.txt", "Path to the file to read")
+	filePath := flag.String("file", "./questions.txt", "Path to the file to read")
+	docType := flag.String("docType", "QUESTION", "Type of document to parse")
 	flag.Parse()
+	err := validateFlags(*filePath, *docType)
+	if err != nil {
+		slog.Error("flag error", slog.String("error", err.Error()))
+		return
+	}
 
-	err := isValidFile(*questionPath)
+	err = isValidFile(*filePath)
 	if err != nil {
 		slog.Error("file path is invalid", slog.String("error", err.Error()))
 		return
 	}
 
-	err = isValidFile(*answerPath)
-	if err != nil {
-		slog.Error("file path is invalid", slog.String("error", err.Error()))
-		return
-	}
-
-	file, _ := os.Open(*questionPath)
+	file, _ := os.Open(*filePath)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	tokenizer := token.NewTokenizer()
@@ -45,9 +50,27 @@ func main() {
 		tokens = append(tokens, *token)
 	}
 
-	allQuestions := parser.ParseQuestion(tokens)
-	b, _ := json.Marshal(allQuestions)
-	fmt.Println(string(b))
+	switch strings.ToUpper(*docType) {
+	case QUESTION_DOC_TYPE:
+		allQuestions := parser.ParseQuestion(tokens)
+		b, _ := json.Marshal(allQuestions)
+		fmt.Println(string(b))
+	case ANSWER_DOC_TYPE:
+		slog.Info("answers parser not implemented yet")
+	default:
+	}
+}
+
+func validateFlags(filepath string, docType string) error {
+	err := isValidFile(filepath)
+	if err != nil {
+		return err
+	}
+	err = isValidDocType(docType)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // check if path exists and is a file, not a folder
@@ -59,6 +82,14 @@ func isValidFile(filePath string) error {
 
 	if fileInfo.IsDir() {
 		return fmt.Errorf("path is not a file")
+	}
+	return nil
+}
+
+func isValidDocType(docType string) error {
+	s := strings.ToUpper(docType)
+	if s != QUESTION_DOC_TYPE && s != ANSWER_DOC_TYPE {
+		return fmt.Errorf("unrecognised document type %s", docType)
 	}
 	return nil
 }
