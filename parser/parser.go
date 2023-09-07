@@ -26,7 +26,7 @@ type Choice struct {
 	IsAnswer   bool
 }
 
-func ParserQuestion(tokens []token.Token) []Question {
+func ParseQuestion(tokens []token.Token) []Question {
 	allQuestions := []Question{}
 	groups := groupByQuestions(tokens)
 	for _, group := range groups {

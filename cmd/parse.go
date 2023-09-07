@@ -45,7 +45,7 @@ func main() {
 		tokens = append(tokens, *token)
 	}
 
-	allQuestions := parser.ParserQuestion(tokens)
+	allQuestions := parser.ParseQuestion(tokens)
 	b, _ := json.Marshal(allQuestions)
 	fmt.Println(string(b))
 }
