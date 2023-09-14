@@ -152,6 +152,7 @@ func toQuestion(id int, tokens []token.Token, answerMap map[string]map[int][]str
 	return &q, nil
 }
 
+// ParseAnswer returns the list of answers for a given rule and question number
 func ParseAnswer(file io.Reader) map[string]map[int][]string {
 	ansMap := map[string]map[int][]string{}
 	scanner := bufio.NewScanner(file)
