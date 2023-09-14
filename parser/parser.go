@@ -35,7 +35,7 @@ func ParseQuestion(tokens []token.Token, answerMap map[string]map[int][]string) 
 	allQuestions := []Question{}
 	groups := groupByQuestions(tokens)
 	for _, group := range groups {
-		q, err := toQuestion(len(allQuestions), group, answerMap)
+		q, err := toQuestion(len(allQuestions)+1, group, answerMap)
 		if err != nil {
 			slog.Error("convert to question error", slog.String("error", err.Error()))
 			return nil
@@ -48,12 +48,7 @@ func ParseQuestion(tokens []token.Token, answerMap map[string]map[int][]string) 
 // given the raw question string, split into the rule,
 // question number and the question text
 func splitQuestion(s string) (string, int, string) {
-	bracketIndex := 1
-	for i, c := range s {
-		if c == ')' {
-			bracketIndex = i
-		}
-	}
+	bracketIndex := strings.IndexRune(s, ')')
 	var rule string
 	var qString string
 	var text string
