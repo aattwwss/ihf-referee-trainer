@@ -1,13 +1,18 @@
 package parser
 
 import (
+	"bufio"
 	"fmt"
+	"io"
+	"regexp"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"log/slog"
 
 	"github.com/aattwwss/ihf-referee-rules/token"
+	"golang.org/x/exp/slices"
 )
 
 type Question struct {
@@ -26,11 +31,11 @@ type Choice struct {
 	IsAnswer   bool
 }
 
-func ParseQuestion(tokens []token.Token) []Question {
+func ParseQuestion(tokens []token.Token, answerMap map[string]map[int][]string) []Question {
 	allQuestions := []Question{}
 	groups := groupByQuestions(tokens)
 	for _, group := range groups {
-		q, err := toQuestion(len(allQuestions), group)
+		q, err := toQuestion(len(allQuestions), group, answerMap)
 		if err != nil {
 			slog.Error("convert to question error", slog.String("error", err.Error()))
 			return nil
@@ -120,7 +125,7 @@ func mergeFreeText(tokens []token.Token) []token.Token {
 }
 
 // given a token group of question and choices, construct the question object
-func toQuestion(id int, tokens []token.Token) (*Question, error) {
+func toQuestion(id int, tokens []token.Token, answerMap map[string]map[int][]string) (*Question, error) {
 	var q Question
 	var choices []Choice
 	for _, t := range tokens {
@@ -136,6 +141,7 @@ func toQuestion(id int, tokens []token.Token) (*Question, error) {
 				QuestionID: id,
 				Option:     option,
 				Text:       choiceText,
+				IsAnswer:   slices.Contains(answerMap[q.Rule][q.QuestionNum], option),
 			}
 			choices = append(choices, c)
 		} else {
@@ -144,4 +150,70 @@ func toQuestion(id int, tokens []token.Token) (*Question, error) {
 	}
 	q.Choices = choices
 	return &q, nil
+}
+
+func ParseAnswer(file io.Reader) map[string]map[int][]string {
+	ansMap := map[string]map[int][]string{}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		s := scanner.Text()
+		if !hasAnswers(s) {
+			continue
+		}
+		rule, questionNum, answers := splitAnswer(s)
+		ruleMap, ok := ansMap[rule]
+		if ok {
+			ruleMap[questionNum] = answers
+		} else {
+			ansMap[rule] = map[int][]string{questionNum: answers}
+		}
+	}
+	return ansMap
+}
+
+func hasAnswers(s string) bool {
+	pattern := `\d\)`
+	regex, _ := regexp.Compile(pattern)
+	return regex.MatchString(s)
+}
+
+// given the raw question string, split into the rule,
+// question number and the question text
+func splitAnswer(s string) (string, int, []string) {
+	bracketIndex := 1
+	for i, c := range s {
+		if c == ')' {
+			bracketIndex = i
+		}
+	}
+	var rule string
+	var aString string
+	var text string
+
+	text = s[bracketIndex+1:]
+	if strings.HasPrefix(s, "SAR") {
+		rule = "SAR"
+		aString = s[3:4]
+	} else {
+		s = s[0:bracketIndex]
+		arr := strings.Split(s, ".")
+		rule = arr[0]
+		aString = arr[1]
+	}
+	n, _ := strconv.Atoi(aString)
+	return rule, n, parseChoices(text)
+}
+
+// Given the line of text of the answer to a question
+// return the correct answers
+// We check if a character has a space before it, and a space or a comma after.
+func parseChoices(s string) []string {
+	s = " " + s
+	var answers []string
+	for i := 0; i < len(s)-3; i++ {
+		if s[i] == ' ' && unicode.IsLower(rune(s[i+1])) && (s[i+2] == ' ' || s[i+2] == ',') {
+			answers = append(answers, string(s[i+1:i+2]))
+		}
+	}
+	return answers
 }

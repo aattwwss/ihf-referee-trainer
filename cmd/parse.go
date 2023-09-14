@@ -6,36 +6,31 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/aattwwss/ihf-referee-rules/parser"
 	"github.com/aattwwss/ihf-referee-rules/token"
 	"golang.org/x/exp/slog"
 )
 
-const (
-	QUESTION_DOC_TYPE = "QUESTION"
-	ANSWER_DOC_TYPE   = "ANSWER"
-)
-
 func main() {
 	// Define a flag for the file path, with a default value of the current directory.
-	filePath := flag.String("file", "./questions.txt", "Path to the file to read")
-	docType := flag.String("docType", "QUESTION", "Type of document to parse")
+	questionPath := flag.String("q", "./questions.txt", "Path to the questions text file")
+	answerPath := flag.String("a", "./answers.txt", "Path to the answers text file")
 	flag.Parse()
-	err := validateFlags(*filePath, *docType)
+	err := isValidFile(*questionPath)
 	if err != nil {
-		slog.Error("flag error", slog.String("error", err.Error()))
+		slog.Error("question path is invalid", slog.String("error", err.Error()))
+		return
+	}
+	err = isValidFile(*answerPath)
+	if err != nil {
+		slog.Error("answer path is invalid", slog.String("error", err.Error()))
 		return
 	}
 
-	err = isValidFile(*filePath)
-	if err != nil {
-		slog.Error("file path is invalid", slog.String("error", err.Error()))
-		return
-	}
-
-	file, _ := os.Open(*filePath)
+	aFile, _ := os.Open(*answerPath)
+	answerMap := parser.ParseAnswer(aFile)
+	file, _ := os.Open(*questionPath)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	tokenizer := token.NewTokenizer()
@@ -50,27 +45,9 @@ func main() {
 		tokens = append(tokens, *token)
 	}
 
-	switch strings.ToUpper(*docType) {
-	case QUESTION_DOC_TYPE:
-		allQuestions := parser.ParseQuestion(tokens)
-		b, _ := json.Marshal(allQuestions)
-		fmt.Println(string(b))
-	case ANSWER_DOC_TYPE:
-		slog.Info("answers parser not implemented yet")
-	default:
-	}
-}
-
-func validateFlags(filepath string, docType string) error {
-	err := isValidFile(filepath)
-	if err != nil {
-		return err
-	}
-	err = isValidDocType(docType)
-	if err != nil {
-		return err
-	}
-	return nil
+	allQuestions := parser.ParseQuestion(tokens, answerMap)
+	b, _ := json.Marshal(allQuestions)
+	fmt.Println(string(b))
 }
 
 // check if path exists and is a file, not a folder
@@ -82,14 +59,6 @@ func isValidFile(filePath string) error {
 
 	if fileInfo.IsDir() {
 		return fmt.Errorf("path is not a file")
-	}
-	return nil
-}
-
-func isValidDocType(docType string) error {
-	s := strings.ToUpper(docType)
-	if s != QUESTION_DOC_TYPE && s != ANSWER_DOC_TYPE {
-		return fmt.Errorf("unrecognised document type %s", docType)
 	}
 	return nil
 }
