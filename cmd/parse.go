@@ -16,6 +16,7 @@ func main() {
 	// Define a flag for the file path, with a default value of the current directory.
 	questionPath := flag.String("q", "./questions.txt", "Path to the questions text file")
 	answerPath := flag.String("a", "./answers.txt", "Path to the answers text file")
+	outputPath := flag.String("0", "./questions.json", "Path to the output file")
 	flag.Parse()
 	err := isValidFile(*questionPath)
 	if err != nil {
@@ -29,6 +30,7 @@ func main() {
 	}
 
 	aFile, _ := os.Open(*answerPath)
+	defer aFile.Close()
 	answerMap := parser.ParseAnswer(aFile)
 	file, _ := os.Open(*questionPath)
 	defer file.Close()
@@ -46,8 +48,22 @@ func main() {
 	}
 
 	allQuestions := parser.ParseQuestion(tokens, answerMap)
-	b, _ := json.Marshal(allQuestions)
+	b, _ := json.MarshalIndent(allQuestions, "", "    ")
 	fmt.Println(string(b))
+
+	outputFile, err := os.Create(*outputPath)
+	if err != nil {
+		slog.Error("error creating file: ", slog.String("error", err.Error()))
+		return
+	}
+	defer outputFile.Close()
+
+	// Write the JSON data to the file
+	_, err = outputFile.Write(b)
+	if err != nil {
+		slog.Error("error writing to file: ", slog.String("error", err.Error()))
+		return
+	}
 }
 
 // check if path exists and is a file, not a folder
