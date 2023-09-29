@@ -22,7 +22,7 @@ go run cmd/parse.go --f=csv
 # generate a json array of all the questions, options and theirs answers
 go run cmd/parse.go --f=csv
 ```
-# json output example
+json output example
 ```json
 [
     {
