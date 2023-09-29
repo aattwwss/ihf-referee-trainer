@@ -25,55 +25,41 @@ go run cmd/parse.go --f=csv
 json output example
 ```json
 [
-    {
-      "ID": 101,
-      "Text": "BLACK 10 receives the ball at the free-throw line. Just after catching the ball he is pulled down by WHITE 3. He falls, hurts his elbow, and needs medical treatment on the court. Correct decision?",
-      "Choices": [
-        {
-          "ID": 0,
-          "QuestionID": 101,
-          "Option": "a",
-          "Text": "Warning for WHITE 3",
-          "IsAnswer": false
-        },
-        {
-          "ID": 0,
-          "QuestionID": 101,
-          "Option": "b",
-          "Text": "2-minute suspension for WHITE 3",
-          "IsAnswer": false
-        },
-        {
-          "ID": 0,
-          "QuestionID": 101,
-          "Option": "c",
-          "Text": "Two people from BLACK team, who are entitled to participate, can enter the court to give BLACK 10 medical treatment on the court after the hand signals 15 and 16 have been shown by one of the referees.",
-          "IsAnswer": false
-        },
-        {
-          "ID": 0,
-          "QuestionID": 101,
-          "Option": "d",
-          "Text": "BLACK 10 may continue to play after receiving medical treatment on the court.",
-          "IsAnswer": false
-        },
-        {
-          "ID": 0,
-          "QuestionID": 101,
-          "Option": "e",
-          "Text": "After receiving medical treatment on the court, BLACK 10 can only re-enter the court following the third attack of his team.",
-          "IsAnswer": false
-        },
-        {
-          "ID": 0,
-          "QuestionID": 101,
-          "Option": "f",
-          "Text": "Time-out",
-          "IsAnswer": false
-        }
-      ],
-      "Rule": "274",
-      "QuestionNum": 45
-    }
+  {
+    "ID": 100,
+    "Text": "After receiving medical treatment on the court, BLACK 11 sits on the bench and complains about a decision of the referees. Therefore, he receives his first 2-minute suspension of the match. Following the second attack of BLACK team, BLACK 11 re-enters the court after serving his 2-minute suspension. Correct decision?",
+    "Choices": [
+      {
+        "ID": 0,
+        "QuestionID": 100,
+        "Option": "a",
+        "Text": "Time-out",
+        "IsAnswer": false
+      },
+      {
+        "ID": 0,
+        "QuestionID": 100,
+        "Option": "b",
+        "Text": "2-minute suspension of BLACK 11",
+        "IsAnswer": false
+      },
+      {
+        "ID": 0,
+        "QuestionID": 100,
+        "Option": "c",
+        "Text": "Play on",
+        "IsAnswer": true
+      },
+      {
+        "ID": 0,
+        "QuestionID": 100,
+        "Option": "d",
+        "Text": "Free throw for WHITE team",
+        "IsAnswer": false
+      }
+    ],
+    "Rule": "4",
+    "QuestionNum": 44
+  }
 ]
 ```
