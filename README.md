@@ -20,7 +20,7 @@ With the two text files, we can attempt to parse them into workable formats, cur
 go run cmd/parse.go --f=csv
 
 # generate a json array of all the questions, options and theirs answers
-go run cmd/parse.go --f=csv
+go run cmd/parse.go --f=json
 ```
 json output example
 ```json
