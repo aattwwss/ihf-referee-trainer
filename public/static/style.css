@@ -1,0 +1,72 @@
+/* Apply the provided image as the textured background to the entire site */
+body {
+    font-family: "Roboto", sans-serif;
+    color: #0; /* Set text color to white or a contrasting color */
+    margin: 0;
+    padding: 0;
+    background-image: url("https://www.toptal.com/designers/subtlepatterns/uploads/vintage-wallpaper.png");
+    background-repeat: repeat;
+}
+
+/* Add your CSS styles here */
+.quiz-container {
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 40px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: #f5f5f5;
+}
+
+.question-card {
+    background-color: #ebe8e8;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.choice-label {
+    background-color: #fff;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.choice-label:hover {
+    background-color: #f0f0f0; /* Change the button color on hover */
+    cursor: pointer;
+}
+
+.choice-label input[type="checkbox"] {
+    display: none;
+}
+
+.choice-label .choice-text {
+    margin-left: 10px;
+}
+
+.choice-label input[type="checkbox"]:checked + .choice-text {
+    font-weight: bold;
+    color: #333;
+}
+
+/* Style for the submit button */
+#quiz-form button[type="submit"] {
+    padding: 10px 20px; /* Add padding here (top and bottom 10px, left and right 20px) */
+    background-color: #0074d9; /* Change the button color here */
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-weight: bold;
+    /*   margin-top: 10px; */
+}
+
+#quiz-form button[type="submit"]:hover {
+    background-color: #0056b3; /* Change the button color on hover */
+}

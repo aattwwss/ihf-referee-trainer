@@ -6,33 +6,33 @@ import (
 	"strings"
 )
 
-type TokenType int
+type Type int
 
 const (
-	PAGE_NUMBER TokenType = iota
+	PAGE_NUMBER Type = iota
 	RULE_NUMBER
 	QUESTION_START
 	CHOICE_START
 	FREE_TEXT
 )
 
-func (tt TokenType) String() string {
+func (tt Type) String() string {
 	return []string{"PAGE_NUMBER", "RULE_NUMBER", "QUESTION_START", "CHOICE_START", "FREE_TEXT"}[tt]
 
 }
 
 type Token struct {
-	Type  TokenType
+	Type  Type
 	Value string
 }
 
-type TokenPattern struct {
-	Type  TokenType
+type Pattern struct {
+	Type  Type
 	Match func(s string) bool
 }
 
 type Tokenizer struct {
-	Matchers []TokenPattern
+	Matchers []Pattern
 }
 
 func NewTokenizer() Tokenizer {
@@ -42,7 +42,7 @@ func NewTokenizer() Tokenizer {
 		regex := regexp.MustCompile(`^Rule \d+$`)
 		return regex.MatchString(s)
 	}
-	ruleNumberTokenPattern := TokenPattern{
+	ruleNumberTokenPattern := Pattern{
 		Type:  RULE_NUMBER,
 		Match: ruleNumberMatcher,
 	}
@@ -53,7 +53,7 @@ func NewTokenizer() Tokenizer {
 		regex := regexp.MustCompile(`^\d+$`)
 		return regex.MatchString(s)
 	}
-	pageNumberTokenPattern := TokenPattern{
+	pageNumberTokenPattern := Pattern{
 		Type:  PAGE_NUMBER,
 		Match: pageNumberMatcher,
 	}
@@ -66,7 +66,7 @@ func NewTokenizer() Tokenizer {
 		regex := regexp.MustCompile(`^(\d+\.\d+\)|SAR\d\)) .+$`)
 		return regex.MatchString(s)
 	}
-	questionStartTokenPattern := TokenPattern{
+	questionStartTokenPattern := Pattern{
 		Type:  QUESTION_START,
 		Match: questionStartMatcher,
 	}
@@ -78,7 +78,7 @@ func NewTokenizer() Tokenizer {
 		regex := regexp.MustCompile(`^.\) .+$`)
 		return regex.MatchString(s)
 	}
-	choiceStartTokenPattern := TokenPattern{
+	choiceStartTokenPattern := Pattern{
 		Type:  CHOICE_START,
 		Match: choiceStartMatcher,
 	}
@@ -87,14 +87,14 @@ func NewTokenizer() Tokenizer {
 	freeTextMatcher := func(s string) bool {
 		return true
 	}
-	freeTextTokenPattern := TokenPattern{
+	freeTextTokenPattern := Pattern{
 		Type:  FREE_TEXT,
 		Match: freeTextMatcher,
 	}
 
 	// return the tokenizer where the order of the token pattern matters!
 	return Tokenizer{
-		Matchers: []TokenPattern{
+		Matchers: []Pattern{
 			ruleNumberTokenPattern,
 			pageNumberTokenPattern,
 			questionStartTokenPattern,

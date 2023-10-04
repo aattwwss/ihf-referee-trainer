@@ -42,15 +42,15 @@ func main() {
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	tokenizer := token.NewTokenizer()
-	tokens := []token.Token{}
+	var tokens []token.Token
 	for scanner.Scan() {
 		s := scanner.Text()
-		token, err := tokenizer.Tokenize(s)
+		tokensFromLine, err := tokenizer.Tokenize(s)
 		if err != nil {
 			slog.Error("tokenise error", slog.String("error", err.Error()))
 			return
 		}
-		tokens = append(tokens, *token)
+		tokens = append(tokens, *tokensFromLine)
 	}
 
 	allQuestions := parser.ParseQuestion(tokens, answerMap)
@@ -98,7 +98,7 @@ func handleOutput(allQuestions []parser.Question, formatType string) {
 		choicesWriter.Comma = delimiter
 		defer choicesWriter.Flush()
 
-		allChoices := []parser.Choice{}
+		var allChoices []parser.Choice
 		header := []string{"Text", "Rule", "Question Number"}
 		if err := questionWriter.Write(header); err != nil {
 			slog.Error("error write questions header: ", slog.String("error", err.Error()))

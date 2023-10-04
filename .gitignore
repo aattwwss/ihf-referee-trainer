@@ -25,3 +25,5 @@ questions_answers.*
 answers.*
 choices.*
 *.log
+
+.idea
