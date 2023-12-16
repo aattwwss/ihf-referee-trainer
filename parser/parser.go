@@ -152,6 +152,7 @@ func ParseAnswer(file io.Reader) map[string]map[int][]string {
 	ansMap := map[string]map[int][]string{}
 	s, _ := pdf.PdfToText(file)
 	for _,s := range strings.Split(s, "\n") {
+		s = strings.TrimSpace(s)
 		if !hasAnswers(s) {
 			continue
 		}
