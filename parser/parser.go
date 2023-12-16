@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"regexp"
@@ -12,6 +11,7 @@ import (
 	"log/slog"
 
 	"github.com/aattwwss/ihf-referee-rules/token"
+	"github.com/aattwwss/ihf-referee-rules/pdf"
 	"golang.org/x/exp/slices"
 )
 
@@ -150,9 +150,8 @@ func toQuestion(id int, tokens []token.Token, answerMap map[string]map[int][]str
 // ParseAnswer returns the list of answers for a given rule and question number
 func ParseAnswer(file io.Reader) map[string]map[int][]string {
 	ansMap := map[string]map[int][]string{}
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		s := scanner.Text()
+	s, _ := pdf.PdfToText(file)
+	for _,s := range strings.Split(s, "\n") {
 		if !hasAnswers(s) {
 			continue
 		}

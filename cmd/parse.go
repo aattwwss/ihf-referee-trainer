@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"encoding/csv"
 	"encoding/json"
 	"flag"
@@ -10,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/aattwwss/ihf-referee-rules/parser"
+	"github.com/aattwwss/ihf-referee-rules/pdf"
 	"github.com/aattwwss/ihf-referee-rules/token"
 	"golang.org/x/exp/slog"
 )
@@ -20,8 +20,8 @@ const (
 
 func main() {
 	// Define a flag for the file path, with a default value of the current directory.
-	questionPath := flag.String("q", "./questions.txt", "Path to the questions text file")
-	answerPath := flag.String("a", "./answers.txt", "Path to the answers text file")
+	questionPath := flag.String("q", "./questions.pdf", "Path to the questions pdf file")
+	answerPath := flag.String("a", "./answers.pdf", "Path to the answers pdf file")
 	formatType := flag.String("f", "json", "format to output the parsed results")
 	flag.Parse()
 	err := isValidFile(*questionPath)
@@ -40,11 +40,15 @@ func main() {
 	answerMap := parser.ParseAnswer(aFile)
 	file, _ := os.Open(*questionPath)
 	defer file.Close()
-	scanner := bufio.NewScanner(file)
 	tokenizer := token.NewTokenizer()
 	var tokens []token.Token
-	for scanner.Scan() {
-		s := scanner.Text()
+	qs, err := pdf.PdfToText(file)
+	if err != nil {
+		slog.Error("pdf to text error", slog.String("error", err.Error()))
+		return
+	}
+
+	for _, s := range strings.Split(qs, "\n") {
 		tokensFromLine, err := tokenizer.Tokenize(s)
 		if err != nil {
 			slog.Error("tokenise error", slog.String("error", err.Error()))
