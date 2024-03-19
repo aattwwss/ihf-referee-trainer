@@ -63,10 +63,40 @@ func main() {
 
 func handleOutput(allQuestions []parser.Question, formatType string) {
 	switch strings.ToLower(formatType) {
+	case "sql":
+		outputFile, err := os.Create("data.sql")
+		if err != nil {
+			slog.Error("error creating file: ", slog.String("error", err.Error()))
+			return
+		}
+		defer outputFile.Close()
+
+		var allChoices []parser.Choice
+		outputFile.WriteString("INSERT INTO question (id, text, rule, question_number) VALUES\n")
+
+		for idx, q := range allQuestions {
+			allChoices = append(allChoices, q.Choices...)
+			outputFile.WriteString(fmt.Sprintf("(%d, '%s', '%s', %d)", q.ID, q.Text, q.Rule, q.QuestionNum))
+			if (idx + 1) != len(allQuestions) {
+				outputFile.WriteString(",\n")
+			}
+		}
+		outputFile.WriteString(";\n\n")
+
+		outputFile.WriteString("INSERT INTO choice (question_id, option, text, is_answer) VALUES\n")
+
+		for idx, c := range allChoices {
+			outputFile.WriteString(fmt.Sprintf("(%d, '%s', '%s', %v)", c.QuestionID, c.Option, c.Text, c.IsAnswer))
+			if (idx + 1) != len(allChoices) {
+				outputFile.WriteString(",\n")
+			}
+		}
+
+		outputFile.WriteString(";\n")
+
 	case "json":
 
 		b, _ := json.MarshalIndent(allQuestions, "", "  ")
-		fmt.Println(string(b))
 
 		outputFile, err := os.Create("questions_answers.json")
 		if err != nil {
