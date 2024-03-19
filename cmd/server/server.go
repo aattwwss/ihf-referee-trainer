@@ -1,20 +1,35 @@
 package main
 
 import (
-	"log/slog"
+	"log"
 	"net/http"
 )
 
 func main() {
-	//start http server
-	http.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-	http.Handle("GET /test", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello, World!"))
-	}))
+	// Define the directory containing your HTML, CSS, and JS files
+	dir := "./public"
 
-	err := http.ListenAndServe(":1234", nil)
+	// Create a file server to serve static files from the directory
+	fileServer := http.FileServer(http.Dir(dir + "/static"))
+
+	// Handle requests to /static/ using the file server
+	http.Handle("/static/", http.StripPrefix("/static/", fileServer))
+
+	// Handle the root URL ("/") by serving an HTML file (e.g., index.html)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, dir+"/index.html")
+	})
+
+	http.HandleFunc("/submit", func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		log.Printf("Form submitted: %s", r.Form)
+	})
+
+	// Set up and start the HTTP server on port 8080
+	port := "8080"
+	log.Printf("Server is listening on :%s...", port)
+	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
-		slog.Error("http server error", slog.String("error", err.Error()))
-		panic(err)
+		log.Fatal(err)
 	}
 }
