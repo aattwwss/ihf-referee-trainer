@@ -14,10 +14,11 @@ const (
 	QUESTION_START
 	CHOICE_START
 	FREE_TEXT
+	IGNORE
 )
 
 func (tt Type) String() string {
-	return []string{"PAGE_NUMBER", "RULE_NUMBER", "QUESTION_START", "CHOICE_START", "FREE_TEXT"}[tt]
+	return []string{"PAGE_NUMBER", "RULE_NUMBER", "QUESTION_START", "CHOICE_START", "FREE_TEXT","IGNORE"}[tt]
 
 }
 
@@ -83,6 +84,15 @@ func NewTokenizer() Tokenizer {
 		Match: choiceStartMatcher,
 	}
 
+	// lines to ignore
+	ignoreMatcher := func(s string) bool {
+		return "Substitution Area Regulation" == strings.TrimSpace(s)
+	}
+	ignoreTokenPattern := Pattern{
+		Type:  IGNORE,
+		Match: ignoreMatcher,
+	}
+
 	// free text is anything else
 	freeTextMatcher := func(s string) bool {
 		return true
@@ -99,12 +109,14 @@ func NewTokenizer() Tokenizer {
 			pageNumberTokenPattern,
 			questionStartTokenPattern,
 			choiceStartTokenPattern,
+			ignoreTokenPattern,
 			freeTextTokenPattern,
 		},
 	}
 }
 
 func (t Tokenizer) Tokenize(s string) (*Token, error) {
+	s = strings.TrimSpace(s)
 	for _, matcher := range t.Matchers {
 		if matcher.Match(s) {
 			return &Token{matcher.Type, s}, nil
