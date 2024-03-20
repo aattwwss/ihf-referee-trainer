@@ -6,4 +6,5 @@ type EnvConfig struct {
 	DbHost     string `env:"DB_HOST"`
 	DbPort     string `env:"DB_PORT"`
 	DbDatabase string `env:"DB_DATABASE"`
+	DbSchema   string `env:"DB_SCHEMA"`
 }
