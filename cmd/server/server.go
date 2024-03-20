@@ -1,11 +1,41 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"github.com/aattwwss/ihf-referee-rules/internal"
+	"github.com/aattwwss/ihf-referee-rules/trainer"
+	"github.com/caarlos0/env/v6"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 )
 
 func main() {
+
+	ctx := context.Background()
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	cfg := internal.EnvConfig{}
+	if err := env.Parse(&cfg); err != nil {
+		log.Fatal(err)
+	}
+
+	connectionUrl := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?search_path=%s", cfg.DbUsername, cfg.DbPassword, cfg.DbHost, cfg.DbPort, cfg.DbDatabase, cfg.DbSchema)
+	db, err := pgxpool.New(ctx, connectionUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	repo := trainer.NewRepository(db)
+	service := trainer.NewService(repo)
+	//controller := trainer.NewController(service)
+
 	// Define the directory containing your HTML, CSS, and JS files
 	dir := "./public"
 
@@ -20,7 +50,7 @@ func main() {
 		http.ServeFile(w, r, dir+"/index.html")
 	})
 
-	http.HandleFunc("/submit", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("POST /submit", func(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		log.Printf("Form submitted: %s", r.Form)
 	})
@@ -28,7 +58,7 @@ func main() {
 	// Set up and start the HTTP server on port 8080
 	port := "8080"
 	log.Printf("Server is listening on :%s...", port)
-	err := http.ListenAndServe(":"+port, nil)
+	err = http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,11 +1,23 @@
 package trainer
 
+import (
+	"context"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
 type QuestionRepository struct {
 	db *pgxpool.Pool
 }
 
+func NewRepository(db *pgxpool.Pool) *QuestionRepository {
+	return &QuestionRepository{
+		db: db,
+	}
+}
+
 func (r *QuestionRepository) GetRandomQuestion(ctx context.Context) (*Question, error) {
-	rows, err := dbpool.Query(ctx, "SELECT * FROM question ORDER BY newid() LIMIT 1")
+	rows, err := r.db.Query(ctx, "SELECT * FROM question ORDER BY newid() LIMIT 1")
 	if err != nil {
 		return nil, err
 	}
@@ -13,7 +25,7 @@ func (r *QuestionRepository) GetRandomQuestion(ctx context.Context) (*Question, 
 	if err != nil {
 		return nil, err
 	}
-	rows, err = dbpool.Query(ctx, "SELECT * FROM choice WHERE question_id = $1 order by option", question.ID)
+	rows, err = r.db.Query(ctx, "SELECT * FROM choice WHERE question_id = $1 order by option", questionEntity.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -36,4 +48,3 @@ func (r *QuestionRepository) GetRandomQuestion(ctx context.Context) (*Question, 
 		Choices:        choices,
 	}, nil
 }
-

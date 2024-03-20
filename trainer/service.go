@@ -1,7 +1,9 @@
 package trainer
 
+import "context"
+
 type Repository interface {
-	GetRandomQuestion(ctx context.Context) (Question, error)
+	GetRandomQuestion(ctx context.Context) (*Question, error)
 }
 
 type QuestionService struct {
@@ -9,9 +11,9 @@ type QuestionService struct {
 }
 
 func NewService(repository Repository) *QuestionService {
-	return QuestionService{repository: repository}
+	return &QuestionService{repository: repository}
 }
 
-func (s *Service) GetRandomQuestion(ctx context.Context) (Question, error) {
+func (s *QuestionService) GetRandomQuestion(ctx context.Context) (*Question, error) {
 	return s.repository.GetRandomQuestion(ctx)
 }
