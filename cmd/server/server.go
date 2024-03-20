@@ -8,6 +8,7 @@ import (
 	"github.com/caarlos0/env/v6"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
+	"html/template"
 	"log"
 	"net/http"
 )
@@ -26,7 +27,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	connectionUrl := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?search_path=%s", cfg.DbUsername, cfg.DbPassword, cfg.DbHost, cfg.DbPort, cfg.DbDatabase, cfg.DbSchema)
+	connectionUrl := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", cfg.DbUsername, cfg.DbPassword, cfg.DbHost, cfg.DbPort, cfg.DbDatabase)
 	db, err := pgxpool.New(ctx, connectionUrl)
 	if err != nil {
 		log.Fatal(err)
@@ -47,7 +48,18 @@ func main() {
 
 	// Handle the root URL ("/") by serving an HTML file (e.g., index.html)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, dir+"/index.html")
+		question, err := service.GetRandomQuestion(ctx)
+		if err != nil {
+			log.Printf("Error getting random question: %s", err)
+		}
+		tmpl, err := template.ParseFiles("./public/index.html")
+		if err != nil {
+			log.Printf("Error parsing template: %s", err)
+		}
+		err = tmpl.Execute(w, question)
+		if err != nil {
+			log.Printf("Error executing template: %s", err)
+		}
 	})
 
 	http.HandleFunc("POST /submit", func(w http.ResponseWriter, r *http.Request) {

@@ -1,12 +1,5 @@
 package trainer
 
-import (
-	"log/slog"
-
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
-)
-
 type QuestionEntity struct {
 	ID             int
 	Text           string
