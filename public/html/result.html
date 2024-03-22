@@ -24,5 +24,5 @@
         {{end}}
     </div>
     {{end}}
-    <button type="submit">Next Question</button>
+    <button type="submit" hx-get="/new-question" hx-target=".quiz-container" hx-swap="outerHTML">Next Question</button>
 </form>

@@ -33,8 +33,22 @@ func (c *Controller) Home(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error getting random question: %s", err)
 	}
-	//tmpl, err := template.ParseFS(dir+"/html/base.html", dir+"/html/game.html")
-	tmpl, err := template.ParseFS(c.html, "base.html", "game.html")
+	tmpl, err := template.ParseFS(c.html, "base.html")
+	if err != nil {
+		log.Printf("Error parsing template: %s", err)
+	}
+	err = tmpl.Execute(w, question)
+	if err != nil {
+		log.Printf("Error executing template: %s", err)
+	}
+}
+
+func (c *Controller) NewQuestion(w http.ResponseWriter, r *http.Request) {
+	question, err := c.service.GetRandomQuestion(r.Context())
+	if err != nil {
+		log.Printf("Error getting random question: %s", err)
+	}
+	tmpl, err := template.ParseFS(c.html, "game.html")
 	if err != nil {
 		log.Printf("Error parsing template: %s", err)
 	}

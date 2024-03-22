@@ -12,8 +12,8 @@
             crossorigin="anonymous"></script>
     <script src="static/script.js" defer></script>
 </head>
-<body>
-    {{ block "content" . }}Something went wrong.{{ end }}
+
+<body hx-get="/new-question" hx-trigger="load">
 </body>
 
 </html>

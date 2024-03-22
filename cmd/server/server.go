@@ -57,6 +57,7 @@ func main() {
 	http.HandleFunc("GET /", controller.Home)
 
 	http.HandleFunc("POST /submit/", controller.Result)
+	http.HandleFunc("GET /new-question", controller.NewQuestion)
 
 	// Set up and start the HTTP server on port 8080
 	port := "8080"
