@@ -44,12 +44,18 @@ func (r *QuestionRepository) GetRandomQuestion(ctx context.Context) (*Question, 
 			IsSelected: false,
 		})
 	}
+	separator := "."
+	if questionEntity.Rule == "SAR" {
+		separator = ""
+	}
+	ruleQuestionNumber := fmt.Sprintf("%s%s%d", questionEntity.Rule, separator, questionEntity.QuestionNumber)
 	return &Question{
-		ID:             questionEntity.ID,
-		Text:           questionEntity.Text,
-		Rule:           questionEntity.Rule,
-		QuestionNumber: questionEntity.QuestionNumber,
-		Choices:        choices,
+		ID:                 questionEntity.ID,
+		Text:               questionEntity.Text,
+		Rule:               questionEntity.Rule,
+		QuestionNumber:     questionEntity.QuestionNumber,
+		RuleQuestionNumber: ruleQuestionNumber,
+		Choices:            choices,
 	}, nil
 }
 

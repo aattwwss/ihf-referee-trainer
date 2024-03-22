@@ -16,11 +16,12 @@ type ChoiceEntity struct {
 }
 
 type Question struct {
-	ID             int
-	Text           string
-	Rule           string
-	QuestionNumber int
-	Choices        []Choice
+	ID                 int
+	Text               string
+	Rule               string
+	QuestionNumber     int
+	RuleQuestionNumber string
+	Choices            []Choice
 }
 
 type Choice struct {
