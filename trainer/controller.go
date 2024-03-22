@@ -87,3 +87,7 @@ func (c *Controller) Result(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error executing template: %s", err)
 	}
 }
+
+func (c *Controller) Health(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+}
