@@ -4,6 +4,7 @@ import "context"
 
 type Repository interface {
 	GetRandomQuestion(ctx context.Context) (*Question, error)
+	GetChoicesByQuestionID(ctx context.Context, questionID int) ([]Choice, error)
 }
 
 type QuestionService struct {
@@ -16,4 +17,8 @@ func NewService(repository Repository) *QuestionService {
 
 func (s *QuestionService) GetRandomQuestion(ctx context.Context) (*Question, error) {
 	return s.repository.GetRandomQuestion(ctx)
+}
+
+func (s *QuestionService) GetChoicesByQuestionID(ctx context.Context, questionID int) ([]Choice, error) {
+	return s.repository.GetChoicesByQuestionID(ctx, questionID)
 }

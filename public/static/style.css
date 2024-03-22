@@ -1,7 +1,7 @@
 /* Apply the provided image as the textured background to the entire site */
 body {
     font-family: "Roboto", sans-serif;
-    color: #0; /* Set text color to white or a contrasting color */
+    color: #000000; /* Set text color to white or a contrasting color */
     margin: 0;
     padding: 0;
     background-image: url("https://www.toptal.com/designers/subtlepatterns/uploads/vintage-wallpaper.png");
@@ -53,6 +53,18 @@ body {
 .choice-label input[type="checkbox"]:checked + .choice-text {
     font-weight: bold;
     color: #333;
+}
+
+.correct-answer {
+    background-color: #caffbf; /* Light green for selected and correct answer */
+}
+
+.wrong-answer {
+    background-color: #ffbcbf; /* Light red for selected and wrong answer */
+}
+
+.missing-answer {
+    background-color: #ffd699; /* Light orange for not selected but supposed to be correct answer */
 }
 
 /* Style for the submit button */

@@ -24,8 +24,9 @@ type Question struct {
 }
 
 type Choice struct {
-	ID       int
-	Option   string
-	Text     string
-	IsAnswer bool
+	ID         int
+	Option     string
+	Text       string
+	IsAnswer   bool
+	IsSelected bool
 }

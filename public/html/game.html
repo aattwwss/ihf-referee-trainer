@@ -4,16 +4,16 @@
         <h2>Question 1</h2>
         <p>{{.Text}}</p>
     </div>
-    <form id="quiz-form" hx-post="/submit">
+    <form id="quiz-form">
         {{range .Choices}}
         <div class="choice-card">
             <label class="choice-label">
-                <input type="checkbox" name="choices" value="a">
+                <input type="checkbox" name="choices" value="{{.Option}}">
                 <span class="choice-text">{{.Text}}</span>
             </label>
         </div>
         {{end}}
-        <button type="submit">Submit</button>
+        <button type="submit" hx-post="/submit/{{.ID}}" hx-target="#quiz-form" hx-swap="outerHTML">Submit</button>
     </form>
 </div>
 {{end}}

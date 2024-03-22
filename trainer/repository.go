@@ -37,10 +37,11 @@ func (r *QuestionRepository) GetRandomQuestion(ctx context.Context) (*Question, 
 	var choices []Choice
 	for _, choiceEntity := range choiceEntities {
 		choices = append(choices, Choice{
-			ID:       choiceEntity.ID,
-			Option:   choiceEntity.Option,
-			Text:     choiceEntity.Text,
-			IsAnswer: choiceEntity.IsAnswer,
+			ID:         choiceEntity.ID,
+			Option:     choiceEntity.Option,
+			Text:       choiceEntity.Text,
+			IsAnswer:   choiceEntity.IsAnswer,
+			IsSelected: false,
 		})
 	}
 	return &Question{
@@ -50,4 +51,27 @@ func (r *QuestionRepository) GetRandomQuestion(ctx context.Context) (*Question, 
 		QuestionNumber: questionEntity.QuestionNumber,
 		Choices:        choices,
 	}, nil
+}
+
+func (r *QuestionRepository) GetChoicesByQuestionID(ctx context.Context, questionID int) ([]Choice, error) {
+	query := fmt.Sprintf("SELECT * FROM choice WHERE question_id = $1 order by option")
+	rows, err := r.db.Query(ctx, query, questionID)
+	if err != nil {
+		return nil, err
+	}
+	choiceEntities, err := pgx.CollectRows(rows, pgx.RowToStructByPos[ChoiceEntity])
+	if err != nil {
+		return nil, err
+	}
+	var choices []Choice
+	for _, choiceEntity := range choiceEntities {
+		choices = append(choices, Choice{
+			ID:         choiceEntity.ID,
+			Option:     choiceEntity.Option,
+			Text:       choiceEntity.Text,
+			IsAnswer:   choiceEntity.IsAnswer,
+			IsSelected: false,
+		})
+	}
+	return choices, nil
 }

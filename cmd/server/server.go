@@ -8,9 +8,12 @@ import (
 	"github.com/caarlos0/env/v6"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
+	"golang.org/x/exp/slices"
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
+	"strings"
 )
 
 func main() {
@@ -62,9 +65,37 @@ func main() {
 		}
 	})
 
-	http.HandleFunc("POST /submit", func(w http.ResponseWriter, r *http.Request) {
-		r.ParseForm()
-		log.Printf("Form submitted: %s", r.Form)
+	http.HandleFunc("POST /submit/", func(w http.ResponseWriter, r *http.Request) {
+		questionID, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/submit/"))
+		if err != nil {
+			log.Printf("Error parsing question ID: %s", err)
+		}
+		err = r.ParseForm()
+		if err != nil {
+			log.Printf("Error parsing form: %s", err)
+		}
+		selected := r.Form["choices"]
+		for key, value := range selected {
+			log.Printf("key: %s, value: %s", key, value)
+		}
+		choices, err := service.GetChoicesByQuestionID(ctx, questionID)
+		for i, choice := range choices {
+			if slices.Contains(selected, choice.Option) {
+				choices[i].IsSelected = true
+			}
+		}
+		if err != nil {
+			log.Printf("Error getting choices: %s", err)
+		}
+
+		tmpl, err := template.ParseFiles(dir + "/html/result.html")
+		if err != nil {
+			log.Printf("Error parsing template: %s", err)
+		}
+		err = tmpl.Execute(w, choices)
+		if err != nil {
+			log.Printf("Error executing template: %s", err)
+		}
 	})
 
 	// Set up and start the HTTP server on port 8080
