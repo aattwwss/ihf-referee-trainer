@@ -68,7 +68,7 @@ body {
 }
 
 .blank-answer:hover {
-    background-color: #fff; /* Light orange for not selected but supposed to be correct answer */
+    background-color: #fff; /* White for not selected and not supposed to be correct answer */
 }
 
 
