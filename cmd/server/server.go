@@ -52,7 +52,7 @@ func main() {
 		if err != nil {
 			log.Printf("Error getting random question: %s", err)
 		}
-		tmpl, err := template.ParseFiles("./public/index.html")
+		tmpl, err := template.ParseFiles(dir+"/html/base.html", dir+"/html/game.html")
 		if err != nil {
 			log.Printf("Error parsing template: %s", err)
 		}

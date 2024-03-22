@@ -1,50 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IHF Referee Trainer</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-</head>
-
-<body>
+{{define "content"}}
 <div class="quiz-container">
     <div class="question-card">
         <h2>Question 1</h2>
-        <p>WHITE 4 receives the ball standing at the opponents’ goal-area line with only the goalkeeper in front of him. Before WHITE 4 tries to score, BLACK 3 pulls him down in a way that WHITE 4 loses the ball. Correct decision?</p>
+        <p>{{.Text}}</p>
     </div>
-    <form id="quiz-form">
-        <label class="choice-label">
-            <div class="choice-card">
+    <form id="quiz-form" hx-post="/submit">
+        {{range .Choices}}
+        <div class="choice-card">
+            <label class="choice-label">
                 <input type="checkbox" name="choices" value="a">
-                <span class="choice-text">2-minute suspension for BLACK 3</span>
-            </div>
-        </label>
-
-        <div class="choice-card">
-            <label class="choice-label">
-                <input type="checkbox" name="choices" value="b">
-                <span class="choice-text">Disqualification for BLACK 3 (red card shown by the referees)</span>
+                <span class="choice-text">{{.Text}}</span>
             </label>
         </div>
-        <div class="choice-card">
-            <label class="choice-label">
-                <input type="checkbox" name="choices" value="v">
-                <span class="choice-text">Free throw for WHITE team</span>
-            </label>
-        </div>
-        <div class="choice-card">
-            <label class="choice-label">
-                <input type="checkbox" name="choices" value="d">
-                <span class="choice-text">7-metre throw for WHITE team</span>
-            </label>
-        </div>
+        {{end}}
         <button type="submit">Submit</button>
     </form>
 </div>
-<script src="script.js"></script>
-</body>
-
-</html>
+{{end}}
