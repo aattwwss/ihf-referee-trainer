@@ -3,22 +3,22 @@
     <div class="choice-card">
         {{if and .IsAnswer .IsSelected}}
         <label class="choice-label correct-answer">
-            <input type="checkbox" name="choices" value="{{.Option}}">
+            <input type="checkbox" name="choices" value="{{.Option}}" onclick="this.checked=!this.checked;">
             <span class="choice-text">{{.Text}}</span>
         </label>
         {{else if and .IsAnswer (not .IsSelected)}}
         <label class="choice-label missing-answer">
-            <input type="checkbox" name="choices" value="{{.Option}}">
+            <input type="checkbox" name="choices" value="{{.Option}}" onclick="this.checked=!this.checked;">
             <span class="choice-text">{{.Text}}</span>
         </label>
         {{else if and .IsSelected (not .IsAnswer) }}
         <label class="choice-label wrong-answer">
-            <input type="checkbox" name="choices" value="{{.Option}}">
+            <input type="checkbox" name="choices" value="{{.Option}}" onclick="this.checked=!this.checked;">
             <span class="choice-text">{{.Text}}</span>
         </label>
         {{else}}
-        <label class="choice-label">
-            <input type="checkbox" name="choices" value="{{.Option}}">
+        <label class="choice-label blank-answer">
+            <input type="checkbox" name="choices" value="{{.Option}}" onclick="this.checked=!this.checked;">
             <span class="choice-text">{{.Text}}</span>
         </label>
         {{end}}

@@ -55,17 +55,22 @@ body {
     color: #333;
 }
 
-.correct-answer {
+.correct-answer, .correct-answer:hover {
     background-color: #caffbf; /* Light green for selected and correct answer */
 }
 
-.wrong-answer {
+.wrong-answer, .wrong-answer:hover {
     background-color: #ffbcbf; /* Light red for selected and wrong answer */
 }
 
-.missing-answer {
+.missing-answer, .missing-answer:hover {
     background-color: #ffd699; /* Light orange for not selected but supposed to be correct answer */
 }
+
+.blank-answer:hover {
+    background-color: #fff; /* Light orange for not selected but supposed to be correct answer */
+}
+
 
 /* Style for the submit button */
 #quiz-form button[type="submit"] {
