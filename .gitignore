@@ -27,3 +27,4 @@ choices.*
 *.log
 
 .idea
+.env
