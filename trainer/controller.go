@@ -33,7 +33,7 @@ func (c *Controller) Home(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error getting random question: %s", err)
 	}
-	tmpl, err := template.ParseFS(c.tmpl, "base.tmpl")
+	tmpl, err := template.ParseFS(c.html, "base.tmpl")
 	if err != nil {
 		log.Printf("Error parsing template: %s", err)
 	}
@@ -48,7 +48,7 @@ func (c *Controller) NewQuestion(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error getting random question: %s", err)
 	}
-	tmpl, err := template.ParseFS(c.tmpl, "game.tmpl")
+	tmpl, err := template.ParseFS(c.html, "game.tmpl")
 	if err != nil {
 		log.Printf("Error parsing template: %s", err)
 	}
@@ -78,7 +78,7 @@ func (c *Controller) Result(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error getting choices: %s", err)
 	}
 
-	tmpl, err := template.ParseFS(c.tmpl, "result.tmpl")
+	tmpl, err := template.ParseFS(c.html, "result.tmpl")
 	if err != nil {
 		log.Printf("Error parsing template: %s", err)
 	}
