@@ -57,18 +57,22 @@ body {
 
 .correct-answer, .correct-answer:hover {
     background-color: #caffbf; /* Light green for selected and correct answer */
+    cursor: default;
 }
 
 .wrong-answer, .wrong-answer:hover {
     background-color: #ffbcbf; /* Light red for selected and wrong answer */
+    cursor: default;
 }
 
 .missing-answer, .missing-answer:hover {
     background-color: #ffd699; /* Light orange for not selected but supposed to be correct answer */
+    cursor: default;
 }
 
-.blank-answer:hover {
+.blank-answer, .blank-answer:hover {
     background-color: #fff; /* White for not selected and not supposed to be correct answer */
+    cursor: default;
 }
 
 
