@@ -29,3 +29,4 @@ choices.*
 .idea
 .env
 resource
+*.sql
