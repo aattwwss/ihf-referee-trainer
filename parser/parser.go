@@ -3,24 +3,23 @@ package parser
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"regexp"
 	"strconv"
 	"strings"
-	"unicode"
 
-	"log/slog"
-
-	"github.com/aattwwss/ihf-referee-rules/token"
 	"github.com/aattwwss/ihf-referee-rules/pdf"
+	"github.com/aattwwss/ihf-referee-rules/token"
 	"golang.org/x/exp/slices"
 )
 
 type Question struct {
-	ID          int
-	Text        string
-	Choices     []Choice
-	Rule        string
-	QuestionNum int
+	ID             int
+	Text           string
+	Choices        []Choice
+	Rule           string
+	QuestionNumber int
+	References     []string
 }
 
 type Choice struct {
@@ -31,8 +30,8 @@ type Choice struct {
 	IsAnswer   bool
 }
 
-func ParseQuestion(tokens []token.Token, answerMap map[string]map[int][]string) []Question {
-	allQuestions := []Question{}
+func ParseQuestion(tokens []token.Token, answerMap map[string]map[int]AnswersAndReferences) []Question {
+	var allQuestions []Question
 	groups := groupByQuestions(tokens)
 	for _, group := range groups {
 		q, err := toQuestion(len(allQuestions)+1, group, answerMap)
@@ -120,7 +119,7 @@ func mergeFreeText(tokens []token.Token) []token.Token {
 }
 
 // given a token group of question and choices, construct the question object
-func toQuestion(id int, tokens []token.Token, answerMap map[string]map[int][]string) (*Question, error) {
+func toQuestion(id int, tokens []token.Token, answerMap map[string]map[int]AnswersAndReferences) (*Question, error) {
 	var q Question
 	var choices []Choice
 	for _, t := range tokens {
@@ -128,15 +127,16 @@ func toQuestion(id int, tokens []token.Token, answerMap map[string]map[int][]str
 			rule, qNum, text := splitQuestion(t.Value)
 			q.ID = id
 			q.Rule = rule
-			q.QuestionNum = qNum
+			q.QuestionNumber = qNum
 			q.Text = text
+			q.References = answerMap[q.Rule][qNum].References
 		} else if t.Type == token.CHOICE_START {
 			option, choiceText := splitChoice(t.Value)
 			c := Choice{
 				QuestionID: id,
 				Option:     option,
 				Text:       choiceText,
-				IsAnswer:   slices.Contains(answerMap[q.Rule][q.QuestionNum], option),
+				IsAnswer:   slices.Contains(answerMap[q.Rule][q.QuestionNumber].Answers, option),
 			}
 			choices = append(choices, c)
 		} else {
@@ -147,21 +147,34 @@ func toQuestion(id int, tokens []token.Token, answerMap map[string]map[int][]str
 	return &q, nil
 }
 
-// ParseAnswer returns the list of answers for a given rule and question number
-func ParseAnswer(file io.Reader) map[string]map[int][]string {
-	ansMap := map[string]map[int][]string{}
+type AnswersAndReferences struct {
+	Answers    []string
+	References []string
+}
+
+// ParseAnswer returns the list of answers and references for a given rule and question number
+func ParseAnswer(file io.Reader) map[string]map[int]AnswersAndReferences {
+	ansMap := map[string]map[int]AnswersAndReferences{}
 	s, _ := pdf.PdfToText(file)
-	for _,s := range strings.Split(s, "\n") {
+	for _, s := range strings.Split(s, "\n") {
 		s = strings.TrimSpace(s)
 		if !hasAnswers(s) {
 			continue
 		}
-		rule, questionNum, answers := splitAnswer(s)
+		rule, questionNum, answers, references := splitAnswer(s)
 		ruleMap, ok := ansMap[rule]
 		if ok {
-			ruleMap[questionNum] = answers
+			ruleMap[questionNum] = AnswersAndReferences{
+				Answers:    answers,
+				References: references,
+			}
 		} else {
-			ansMap[rule] = map[int][]string{questionNum: answers}
+			ansMap[rule] = map[int]AnswersAndReferences{
+				questionNum: {
+					Answers:    answers,
+					References: references,
+				},
+			}
 		}
 	}
 	return ansMap
@@ -173,43 +186,33 @@ func hasAnswers(s string) bool {
 	return regex.MatchString(s)
 }
 
-// given the raw question string, split into the rule,
-// question number and the question text
-func splitAnswer(s string) (string, int, []string) {
-	bracketIndex := 1
-	for i, c := range s {
-		if c == ')' {
-			bracketIndex = i
-		}
-	}
-	var rule string
-	var aString string
-	var text string
-
-	text = s[bracketIndex+1:]
-	if strings.HasPrefix(s, "SAR") {
-		rule = "SAR"
-		aString = s[3:4]
-	} else {
-		s = s[0:bracketIndex]
-		arr := strings.Split(s, ".")
-		rule = arr[0]
-		aString = arr[1]
-	}
-	n, _ := strconv.Atoi(aString)
-	return rule, n, parseChoices(text)
+// Split the answer into the rule number, question number, the list of answers and the references
+func splitAnswer(s string) (string, int, []string, []string) {
+	// split into chunks of ruleNumber.QuestionNumber, answers, and references
+	fields := regexp.MustCompile(` {2,}`).Split(s, -1)
+	rule, questionNumber := getRuleQuestionNum(fields[0])
+	correctAnswers := strings.Split(fields[1], ", ")
+	references := strings.Split(fields[2], ", ")
+	return rule, questionNumber, correctAnswers, references
 }
 
-// Given the line of text of the answer to a question
-// return the correct answers
-// We check if a character has a space before it, and a space or a comma after.
-func parseChoices(s string) []string {
-	s = " " + s
-	var answers []string
-	for i := 0; i < len(s)-3; i++ {
-		if s[i] == ' ' && unicode.IsLower(rune(s[i+1])) && (s[i+2] == ' ' || s[i+2] == ',') {
-			answers = append(answers, string(s[i+1:i+2]))
-		}
+// given the rule and question number, return the rule and the question number
+// 18.7) -> "18", 7
+// SAR1 -> "SAR", 1
+func getRuleQuestionNum(s string) (string, int) {
+	// time away the close bracket
+	s = strings.TrimRight(s, ")")
+	rule := ""
+	questionNumberString := ""
+	if strings.HasPrefix(s, "SAR") {
+		// SAR does not have the period to separate the question number
+		rule = "SAR"
+		questionNumberString = strings.TrimLeft(s, "SAR")
+	} else {
+		arr := strings.Split(s, ".")
+		rule = arr[0]
+		questionNumberString = arr[1]
 	}
-	return answers
+	questionNumber, _ := strconv.Atoi(questionNumberString)
+	return rule, questionNumber
 }

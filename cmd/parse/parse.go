@@ -76,7 +76,7 @@ func handleOutput(allQuestions []parser.Question, formatType string) {
 
 		for idx, q := range allQuestions {
 			allChoices = append(allChoices, q.Choices...)
-			outputFile.WriteString(fmt.Sprintf("(%d, '%s', '%s', %d)", q.ID, q.Text, q.Rule, q.QuestionNum))
+			outputFile.WriteString(fmt.Sprintf("(%d, '%s', '%s', %d)", q.ID, q.Text, q.Rule, q.QuestionNumber))
 			if (idx + 1) != len(allQuestions) {
 				outputFile.WriteString(",\n")
 			}
@@ -141,7 +141,7 @@ func handleOutput(allQuestions []parser.Question, formatType string) {
 
 		for _, q := range allQuestions {
 			allChoices = append(allChoices, q.Choices...)
-			record := []string{q.Text, q.Rule, fmt.Sprintf("%d", q.QuestionNum)}
+			record := []string{q.Text, q.Rule, fmt.Sprintf("%d", q.QuestionNumber)}
 			if err := questionWriter.Write(record); err != nil {
 				slog.Error("error write questions record: ", slog.String("error", err.Error()))
 			}
