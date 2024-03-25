@@ -15,6 +15,12 @@ type ChoiceEntity struct {
 	IsAnswer   bool
 }
 
+type ReferenceEntity struct {
+	ID         int
+	QuestionId int
+	Text       string
+}
+
 type Question struct {
 	ID                 int
 	Text               string
@@ -22,6 +28,7 @@ type Question struct {
 	QuestionNumber     int
 	RuleQuestionNumber string
 	Choices            []Choice
+	References         []Reference
 }
 
 type Choice struct {
@@ -30,4 +37,9 @@ type Choice struct {
 	Text       string
 	IsAnswer   bool
 	IsSelected bool
+}
+
+type Reference struct {
+	ID   int
+	Text string
 }
