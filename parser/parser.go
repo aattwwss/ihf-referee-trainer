@@ -19,7 +19,7 @@ type Question struct {
 	Choices        []Choice
 	Rule           string
 	QuestionNumber int
-	References     []string
+	References     []Reference
 }
 
 type Choice struct {
@@ -28,6 +28,12 @@ type Choice struct {
 	Option     string
 	Text       string
 	IsAnswer   bool
+}
+
+type Reference struct {
+	ID         int
+	QuestionID int
+	Text       string
 }
 
 func ParseQuestion(tokens []token.Token, answerMap map[string]map[int]AnswersAndReferences) []Question {
@@ -129,7 +135,6 @@ func toQuestion(id int, tokens []token.Token, answerMap map[string]map[int]Answe
 			q.Rule = rule
 			q.QuestionNumber = qNum
 			q.Text = text
-			q.References = answerMap[q.Rule][qNum].References
 		} else if t.Type == token.CHOICE_START {
 			option, choiceText := splitChoice(t.Value)
 			c := Choice{
@@ -144,6 +149,15 @@ func toQuestion(id int, tokens []token.Token, answerMap map[string]map[int]Answe
 		}
 	}
 	q.Choices = choices
+
+	var references []Reference
+	for _, r := range answerMap[q.Rule][q.QuestionNumber].References {
+		references = append(references, Reference{
+			QuestionID: id,
+			Text:       r,
+		})
+	}
+	q.References = references
 	return &q, nil
 }
 

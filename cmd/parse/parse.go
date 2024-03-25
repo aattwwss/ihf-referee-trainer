@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/csv"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -72,10 +71,12 @@ func handleOutput(allQuestions []parser.Question, formatType string) {
 		defer outputFile.Close()
 
 		var allChoices []parser.Choice
+		var allReferences []parser.Reference
 		outputFile.WriteString("INSERT INTO question (id, text, rule, question_number) VALUES\n")
 
 		for idx, q := range allQuestions {
 			allChoices = append(allChoices, q.Choices...)
+			allReferences = append(allReferences, q.References...)
 			outputFile.WriteString(fmt.Sprintf("(%d, '%s', '%s', %d)", q.ID, q.Text, q.Rule, q.QuestionNumber))
 			if (idx + 1) != len(allQuestions) {
 				outputFile.WriteString(",\n")
@@ -91,8 +92,18 @@ func handleOutput(allQuestions []parser.Question, formatType string) {
 				outputFile.WriteString(",\n")
 			}
 		}
+		outputFile.WriteString(";\n\n")
 
-		outputFile.WriteString(";\n")
+		outputFile.WriteString("INSERT INTO reference (question_id, text) VALUES\n")
+
+		for idx, ref := range allReferences {
+			outputFile.WriteString(fmt.Sprintf("(%d, '%s')", ref.QuestionID, ref.Text))
+			if (idx + 1) != len(allReferences) {
+				outputFile.WriteString(",\n")
+			}
+		}
+
+		outputFile.WriteString(";")
 
 	case "json":
 
@@ -110,54 +121,6 @@ func handleOutput(allQuestions []parser.Question, formatType string) {
 		if err != nil {
 			slog.Error("error writing to file: ", slog.String("error", err.Error()))
 			return
-		}
-	case "csv":
-		questionsFile, err := os.Create("questions.csv")
-		defer questionsFile.Close()
-		if err != nil {
-			slog.Error("error creating file: ", slog.String("error", err.Error()))
-			return
-		}
-		questionWriter := csv.NewWriter(questionsFile)
-		questionWriter.Comma = delimiter
-		defer questionWriter.Flush()
-
-		choicesFile, err := os.Create("choices.csv")
-		defer choicesFile.Close()
-		if err != nil {
-			slog.Error("error creating file: ", slog.String("error", err.Error()))
-			return
-		}
-		choicesWriter := csv.NewWriter(choicesFile)
-		choicesWriter.Comma = delimiter
-		defer choicesWriter.Flush()
-
-		var allChoices []parser.Choice
-		header := []string{"Text", "Rule", "Question Number"}
-		if err := questionWriter.Write(header); err != nil {
-			slog.Error("error write questions header: ", slog.String("error", err.Error()))
-			return
-		}
-
-		for _, q := range allQuestions {
-			allChoices = append(allChoices, q.Choices...)
-			record := []string{q.Text, q.Rule, fmt.Sprintf("%d", q.QuestionNumber)}
-			if err := questionWriter.Write(record); err != nil {
-				slog.Error("error write questions record: ", slog.String("error", err.Error()))
-			}
-		}
-
-		choicesHeader := []string{"Question ID", "Option", "Text", "Is Answer"}
-		if err := choicesWriter.Write(choicesHeader); err != nil {
-			slog.Error("error write choices header: ", slog.String("error", err.Error()))
-			return
-		}
-
-		for _, c := range allChoices {
-			record := []string{fmt.Sprintf("%d", c.QuestionID), c.Option, c.Text, fmt.Sprintf("%v", c.IsAnswer)}
-			if err := choicesWriter.Write(record); err != nil {
-				slog.Error("error write choices record: ", slog.String("error", err.Error()))
-			}
 		}
 	}
 }
