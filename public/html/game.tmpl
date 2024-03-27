@@ -11,5 +11,5 @@
             </label>
         </div>
         {{end}}
-        <button type="submit" hx-post="/submit/{{.ID}}" hx-target="#quiz-form" hx-swap="outerHTML">Submit</button>
+        <button type="submit" hx-post="/submit/{{.ID}}" hx-target="#quiz-form" hx-swap="innerHTML">Submit</button>
     </form>
