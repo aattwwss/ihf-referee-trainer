@@ -29,7 +29,7 @@ func NewController(service Service, html fs.FS) *Controller {
 }
 
 func (c *Controller) RandomQuestion(w http.ResponseWriter, _ *http.Request) {
-	tmpl, err := template.ParseFS(c.html, "base.tmpl")
+	tmpl, err := template.ParseFS(c.html, "base.tmpl", "randomQuestion.tmpl")
 	if err != nil {
 		log.Printf("Error parsing template: %s", err)
 	}
