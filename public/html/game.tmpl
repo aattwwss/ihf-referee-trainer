@@ -1,17 +1,15 @@
-<div class="quiz-container">
-    <div class="question-card">
-        <h2>Question {{.RuleQuestionNumber}}</h2>
-        <p>{{.Text}}</p>
-    </div>
-    <form id="quiz-form">
-        {{range .Choices}}
-        <div class="choice-card">
-            <label class="choice-label">
-                <input type="checkbox" name="choices" value="{{.Option}}">
-                <span class="choice-text">{{.Text}}</span>
-            </label>
-        </div>
-        {{end}}
-        <button type="submit" hx-post="/submit/{{.ID}}" hx-target="#quiz-form" hx-swap="outerHTML">Submit</button>
-    </form>
+<div class="question-card">
+    <h2>Question {{.RuleQuestionNumber}}</h2>
+    <p>{{.Text}}</p>
 </div>
+<form id="quiz-form">
+    {{range .Choices}}
+    <div class="choice-card">
+        <label class="choice-label">
+            <input type="checkbox" name="choices" value="{{.Option}}">
+            <span class="choice-text">{{.Text}}</span>
+        </label>
+    </div>
+    {{end}}
+    <button type="submit" hx-post="/submit/{{.ID}}" hx-target="#quiz-form" hx-swap="innerHTML">Submit</button>
+</form>

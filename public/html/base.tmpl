@@ -22,7 +22,9 @@
     <script src="static/htmx.min.js" defer></script>
 </head>
 
-<body hx-get="/new-question" hx-trigger="load">
+<body>
+<div class="card-container"> <h1>IHF Referee Rules Trainer</h1> </div>
+<div class="card-container" id="quiz-container" hx-get="/new-question" hx-trigger="load"></div>
 </body>
 
 </html>

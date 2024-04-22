@@ -12,7 +12,7 @@ import (
 )
 
 type Service interface {
-	GetRandomQuestion(ctx context.Context) (*Question, error)
+	GetRandomQuestion(ctx context.Context, rules []string) (*Question, error)
 	GetChoicesByQuestionID(ctx context.Context, questionID int) ([]Choice, error)
 }
 
@@ -28,23 +28,23 @@ func NewController(service Service, html fs.FS) *Controller {
 	}
 }
 
-func (c *Controller) Home(w http.ResponseWriter, r *http.Request) {
-	question, err := c.service.GetRandomQuestion(r.Context())
-	if err != nil {
-		log.Printf("Error getting random question: %s", err)
-	}
+func (c *Controller) Home(w http.ResponseWriter, _ *http.Request) {
 	tmpl, err := template.ParseFS(c.html, "base.tmpl")
 	if err != nil {
 		log.Printf("Error parsing template: %s", err)
 	}
-	err = tmpl.Execute(w, question)
+	err = tmpl.Execute(w, nil)
 	if err != nil {
 		log.Printf("Error executing template: %s", err)
 	}
 }
 
 func (c *Controller) NewQuestion(w http.ResponseWriter, r *http.Request) {
-	question, err := c.service.GetRandomQuestion(r.Context())
+	rules, err := getQueryStrings(r, "rules")
+	if err != nil {
+		log.Printf("Error getting query strings: %s", err)
+	}
+	question, err := c.service.GetRandomQuestion(r.Context(), rules)
 	if err != nil {
 		log.Printf("Error getting random question: %s", err)
 	}
@@ -90,4 +90,16 @@ func (c *Controller) Result(w http.ResponseWriter, r *http.Request) {
 
 func (c *Controller) Health(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
+}
+
+func getQueryStrings(r *http.Request, query string) ([]string, error) {
+	err := r.ParseForm()
+	if err != nil {
+		return nil, err
+	}
+	var ss []string
+	for _, s := range r.Form[query] {
+		ss = append(ss, strings.Split(s, ",")...)
+	}
+	return ss, nil
 }

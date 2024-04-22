@@ -4,12 +4,12 @@ body {
     color: #000000; /* Set text color to white or a contrasting color */
     margin: 0;
     padding: 0;
-    background-image: url("https://www.toptal.com/designers/subtlepatterns/uploads/vintage-wallpaper.png");
+    background-image: url("/static/wallpaper.png");
     background-repeat: repeat;
 }
 
 /* Add your CSS styles here */
-.quiz-container {
+.card-container {
     max-width: 900px;
     margin: 20px auto;
     padding: 40px;

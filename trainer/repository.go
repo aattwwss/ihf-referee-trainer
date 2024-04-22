@@ -17,9 +17,16 @@ func NewRepository(db *pgxpool.Pool) *QuestionRepository {
 	}
 }
 
-func (r *QuestionRepository) GetRandomQuestion(ctx context.Context) (*Question, error) {
-	query := fmt.Sprintf("SELECT * FROM question ORDER BY RANDOM() LIMIT 1")
-	rows, err := r.db.Query(ctx, query)
+func (r *QuestionRepository) GetRandomQuestion(ctx context.Context, rules []string) (*Question, error) {
+	if len(rules) == 0 {
+		allRules, err := r.GetAllDistinctRules(ctx)
+		if err != nil {
+			return nil, err
+		}
+		rules = allRules
+	}
+	query := fmt.Sprintf("SELECT * FROM question WHERE rule =  ANY($1) ORDER BY RANDOM() LIMIT 1")
+	rows, err := r.db.Query(ctx, query, rules)
 	if err != nil {
 		return nil, err
 	}
@@ -80,4 +87,26 @@ func (r *QuestionRepository) GetChoicesByQuestionID(ctx context.Context, questio
 		})
 	}
 	return choices, nil
+}
+
+func (r *QuestionRepository) GetAllDistinctRules(ctx context.Context) ([]string, error) {
+
+	query := fmt.Sprintf("SELECT DISTINCT rule FROM question")
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	// scan int string array
+	var rules []string
+	for rows.Next() {
+
+		var rule string
+		err = rows.Scan(&rule)
+		if err != nil {
+			return nil, err
+		}
+		rules = append(rules, rule)
+	}
+	return rules, nil
+
 }
