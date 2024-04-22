@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/aattwwss/ihf-referee-rules/parser"
@@ -72,38 +73,53 @@ func handleOutput(allQuestions []parser.Question, formatType string) {
 
 		var allChoices []parser.Choice
 		var allReferences []parser.Reference
-		outputFile.WriteString("INSERT INTO question (id, text, rule, question_number) VALUES\n")
+		var allRules []parser.Rule
+		questionSQLText := "INSERT INTO question (id, text, rule, question_number) VALUES\n"
 
 		for idx, q := range allQuestions {
 			allChoices = append(allChoices, q.Choices...)
 			allReferences = append(allReferences, q.References...)
-			outputFile.WriteString(fmt.Sprintf("(%d, '%s', '%s', %d)", q.ID, q.Text, q.Rule, q.QuestionNumber))
+			if !slices.ContainsFunc(allRules, func(r parser.Rule) bool {
+				return r.Text == q.Rule.Text
+			}) {
+				allRules = append(allRules, q.Rule)
+			}
+
+			questionSQLText += fmt.Sprintf("(%d, '%s', '%s', %d)", q.ID, q.Text, q.Rule.Text, q.QuestionNumber)
 			if (idx + 1) != len(allQuestions) {
-				outputFile.WriteString(",\n")
+				questionSQLText += ",\n"
 			}
 		}
-		outputFile.WriteString(";\n\n")
+		questionSQLText += ";\n\n"
 
-		outputFile.WriteString("INSERT INTO choice (question_id, option, text, is_answer) VALUES\n")
-
+		choiceSQLText := "INSERT INTO choice (question_id, option, text, is_answer) VALUES\n"
 		for idx, c := range allChoices {
-			outputFile.WriteString(fmt.Sprintf("(%d, '%s', '%s', %v)", c.QuestionID, c.Option, c.Text, c.IsAnswer))
+			choiceSQLText += fmt.Sprintf("(%d, '%s', '%s', %v)", c.QuestionID, c.Option, c.Text, c.IsAnswer)
 			if (idx + 1) != len(allChoices) {
-				outputFile.WriteString(",\n")
+				choiceSQLText += ",\n"
 			}
 		}
-		outputFile.WriteString(";\n\n")
+		choiceSQLText += ";\n\n"
 
-		outputFile.WriteString("INSERT INTO reference (question_id, text) VALUES\n")
-
+		referenceSQLText := "INSERT INTO reference (question_id, text) VALUES\n"
 		for idx, ref := range allReferences {
-			outputFile.WriteString(fmt.Sprintf("(%d, '%s')", ref.QuestionID, ref.Text))
+			referenceSQLText += fmt.Sprintf("(%d, '%s')", ref.QuestionID, ref.Text)
 			if (idx + 1) != len(allReferences) {
-				outputFile.WriteString(",\n")
+				referenceSQLText += ",\n"
 			}
 		}
+		referenceSQLText += ";\n\n"
 
-		outputFile.WriteString(";")
+		ruleSQLText := "INSERT INTO rule (text, sort_order) VALUES\n"
+		for idx, r := range allRules {
+			r.SortOrder = idx
+			ruleSQLText += fmt.Sprintf("('%s', %d)", r.Text, r.SortOrder)
+			if (idx + 1) != len(allRules) {
+				ruleSQLText += ",\n"
+			}
+		}
+		ruleSQLText += ";\n\n"
+		outputFile.WriteString(ruleSQLText + questionSQLText + choiceSQLText + referenceSQLText)
 
 	case "json":
 

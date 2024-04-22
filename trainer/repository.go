@@ -91,7 +91,7 @@ func (r *QuestionRepository) GetChoicesByQuestionID(ctx context.Context, questio
 
 func (r *QuestionRepository) GetAllDistinctRules(ctx context.Context) ([]string, error) {
 
-	query := fmt.Sprintf("SELECT DISTINCT rule FROM question")
+	query := fmt.Sprintf("SELECT text FROM rule")
 	rows, err := r.db.Query(ctx, query)
 	if err != nil {
 		return nil, err
@@ -108,5 +108,36 @@ func (r *QuestionRepository) GetAllDistinctRules(ctx context.Context) ([]string,
 		rules = append(rules, rule)
 	}
 	return rules, nil
+}
 
+func (r *QuestionRepository) ListQuestions(ctx context.Context, rules []string, search string) ([]Question, error) {
+	if len(rules) == 0 {
+		allRules, err := r.GetAllDistinctRules(ctx)
+		if err != nil {
+			return nil, err
+		}
+		rules = allRules
+	}
+	query := fmt.Sprintf("SELECT * FROM question q join rule r on q.rule = r.text WHERE rule =  ANY($1) ORDER BY r.sort_number, q.question_number")
+	rows, err := r.db.Query(ctx, query, rules)
+	if err != nil {
+		return nil, err
+	}
+	questionEntities, err := pgx.CollectRows(rows, pgx.RowToStructByPos[QuestionEntity])
+	if err != nil {
+		return nil, err
+	}
+	var questions []Question
+	for _, questionEntity := range questionEntities {
+		question := Question{
+			ID:                 questionEntity.ID,
+			Text:               questionEntity.Text,
+			Rule:               questionEntity.Rule,
+			QuestionNumber:     questionEntity.QuestionNumber,
+			RuleQuestionNumber: ruleQuestionNumber,
+			Choices:            choices,
+		}
+		questions = append(questions, question)
+	}
+	return questions, nil
 }

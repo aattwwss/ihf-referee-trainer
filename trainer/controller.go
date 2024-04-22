@@ -14,6 +14,7 @@ import (
 type Service interface {
 	GetRandomQuestion(ctx context.Context, rules []string) (*Question, error)
 	GetChoicesByQuestionID(ctx context.Context, questionID int) ([]Choice, error)
+	ListQuestions(ctx context.Context, rules []string, search string) ([]Question, error)
 }
 
 type Controller struct {
