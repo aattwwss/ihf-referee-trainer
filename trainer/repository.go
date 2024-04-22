@@ -110,7 +110,7 @@ func (r *QuestionRepository) GetAllDistinctRules(ctx context.Context) ([]string,
 	return rules, nil
 }
 
-func (r *QuestionRepository) ListQuestions(ctx context.Context, rules []string, search string) ([]Question, error) {
+func (r *QuestionRepository) ListQuestions(ctx context.Context, rules []string, search string, limit int) ([]Question, error) {
 	if len(rules) == 0 {
 		allRules, err := r.GetAllDistinctRules(ctx)
 		if err != nil {
@@ -118,8 +118,8 @@ func (r *QuestionRepository) ListQuestions(ctx context.Context, rules []string, 
 		}
 		rules = allRules
 	}
-	query := fmt.Sprintf("SELECT * FROM question q join rule r on q.rule = r.text WHERE rule =  ANY($1) ORDER BY r.sort_number, q.question_number")
-	rows, err := r.db.Query(ctx, query, rules)
+	query := fmt.Sprintf("SELECT q.id, q.text, q.rule, q.question_number FROM question q join rule r on q.rule = r.text WHERE rule = ANY($1) ORDER BY r.sort_order, q.question_number limit $2")
+	rows, err := r.db.Query(ctx, query, rules, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -127,17 +127,57 @@ func (r *QuestionRepository) ListQuestions(ctx context.Context, rules []string, 
 	if err != nil {
 		return nil, err
 	}
+	questionIds := make([]int, 0, len(questionEntities))
+	for _, questionEntity := range questionEntities {
+		questionIds = append(questionIds, questionEntity.ID)
+	}
+	choiceMap, err := r.FindChoicesByQuestionIds(ctx, questionIds...)
 	var questions []Question
 	for _, questionEntity := range questionEntities {
+		separator := "."
+		if questionEntity.Rule == "SAR" {
+			separator = ""
+		}
+		ruleQuestionNumber := fmt.Sprintf("%s%s%d", questionEntity.Rule, separator, questionEntity.QuestionNumber)
 		question := Question{
 			ID:                 questionEntity.ID,
 			Text:               questionEntity.Text,
 			Rule:               questionEntity.Rule,
 			QuestionNumber:     questionEntity.QuestionNumber,
 			RuleQuestionNumber: ruleQuestionNumber,
-			Choices:            choices,
+			Choices:            choiceMap[questionEntity.ID],
 		}
 		questions = append(questions, question)
 	}
 	return questions, nil
+}
+
+// FindChoicesByQuestionIds finds choices by question ids and returns a map of question id to choices
+func (r *QuestionRepository) FindChoicesByQuestionIds(ctx context.Context, questionIds ...int) (map[int][]Choice, error) {
+	query := fmt.Sprintf("SELECT * FROM choice WHERE question_id = ANY($1) order by option")
+	rows, err := r.db.Query(ctx, query, questionIds)
+	if err != nil {
+		return nil, err
+	}
+	choiceEntities, err := pgx.CollectRows(rows, pgx.RowToStructByPos[ChoiceEntity])
+	if err != nil {
+		return nil, err
+	}
+	var choiceMap = make(map[int][]Choice)
+	for _, choiceEntity := range choiceEntities {
+		choices, ok := choiceMap[choiceEntity.QuestionId]
+		if !ok {
+			choices = []Choice{}
+		}
+
+		choices = append(choices, Choice{
+			ID:         choiceEntity.ID,
+			Option:     choiceEntity.Option,
+			Text:       choiceEntity.Text,
+			IsAnswer:   choiceEntity.IsAnswer,
+			IsSelected: false,
+		})
+		choiceMap[choiceEntity.QuestionId] = choices
+	}
+	return choiceMap, nil
 }

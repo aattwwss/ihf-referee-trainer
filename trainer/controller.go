@@ -2,6 +2,7 @@ package trainer
 
 import (
 	"context"
+	"fmt"
 	"html/template"
 	"io/fs"
 	"log"
@@ -14,7 +15,7 @@ import (
 type Service interface {
 	GetRandomQuestion(ctx context.Context, rules []string) (*Question, error)
 	GetChoicesByQuestionID(ctx context.Context, questionID int) ([]Choice, error)
-	ListQuestions(ctx context.Context, rules []string, search string) ([]Question, error)
+	ListQuestions(ctx context.Context, rules []string, search string, limit int) ([]Question, error)
 }
 
 type Controller struct {
@@ -27,6 +28,33 @@ func NewController(service Service, html fs.FS) *Controller {
 		service: service,
 		html:    html,
 	}
+}
+
+func (c *Controller) Home(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFS(c.html, "base.tmpl", "home.tmpl")
+	if err != nil {
+		log.Printf("Error parsing template: %s", err)
+	}
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		log.Printf("Error executing template: %s", err)
+	}
+	search, err := getQueryStrings(r, "search")
+	searchString := ""
+	if len(search) != 0 {
+		searchString = search[0]
+	}
+	if err != nil {
+		log.Printf("Error parsing form: %s", err)
+	}
+	questions, err := c.service.ListQuestions(r.Context(), nil, searchString, 10)
+	if err != nil {
+		log.Printf("Error getting questions: %s", err)
+	}
+	for _, q := range questions {
+		fmt.Println(q)
+	}
+
 }
 
 func (c *Controller) RandomQuestion(w http.ResponseWriter, _ *http.Request) {
