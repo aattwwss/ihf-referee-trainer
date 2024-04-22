@@ -28,7 +28,7 @@ func NewController(service Service, html fs.FS) *Controller {
 	}
 }
 
-func (c *Controller) Home(w http.ResponseWriter, _ *http.Request) {
+func (c *Controller) RandomQuestion(w http.ResponseWriter, _ *http.Request) {
 	tmpl, err := template.ParseFS(c.html, "base.tmpl")
 	if err != nil {
 		log.Printf("Error parsing template: %s", err)
@@ -48,7 +48,7 @@ func (c *Controller) NewQuestion(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error getting random question: %s", err)
 	}
-	tmpl, err := template.ParseFS(c.html, "game.tmpl")
+	tmpl, err := template.ParseFS(c.html, "quiz.tmpl")
 	if err != nil {
 		log.Printf("Error parsing template: %s", err)
 	}
@@ -92,6 +92,7 @@ func (c *Controller) Health(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// getQueryStrings parses a list of query strings from the request.
 func getQueryStrings(r *http.Request, query string) ([]string, error) {
 	err := r.ParseForm()
 	if err != nil {

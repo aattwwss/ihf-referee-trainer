@@ -54,7 +54,7 @@ func main() {
 	http.Handle("GET /static/", http.StripPrefix("/static/", fileServer))
 
 	// Handle the root URL ("/") by serving an HTML file (e.g., index.html)
-	http.HandleFunc("GET /", controller.Home)
+	http.HandleFunc("GET /random-question", controller.RandomQuestion)
 
 	http.HandleFunc("POST /submit/", controller.Result)
 	http.HandleFunc("GET /new-question", controller.NewQuestion)
