@@ -31,7 +31,8 @@ type Choice struct {
 }
 
 type Rule struct {
-	Text      string
+	ID        string
+	Name      string
 	SortOrder int
 }
 
@@ -59,22 +60,22 @@ func ParseQuestion(tokens []token.Token, answerMap map[string]map[int]AnswersAnd
 // question number and the question text
 func splitQuestion(s string) (Rule, int, string) {
 	bracketIndex := strings.IndexRune(s, ')')
-	var ruleText string
+	var ruleId string
 	var qString string
 	var text string
 
 	text = s[bracketIndex+1:]
 	if strings.HasPrefix(s, "SAR") {
-		ruleText = "SAR"
+		ruleId = "SAR"
 		qString = s[3:4]
 	} else {
 		s = s[0:bracketIndex]
 		arr := strings.Split(s, ".")
-		ruleText = arr[0]
+		ruleId = arr[0]
 		qString = arr[1]
 	}
 	n, _ := strconv.Atoi(qString)
-	return Rule{Text: ruleText}, n, strings.TrimSpace(text)
+	return Rule{ID: ruleId}, n, strings.TrimSpace(text)
 }
 
 // given the raw choice string, split into the option and text
@@ -146,7 +147,7 @@ func toQuestion(id int, tokens []token.Token, answerMap map[string]map[int]Answe
 				QuestionID: id,
 				Option:     option,
 				Text:       choiceText,
-				IsAnswer:   slices.Contains(answerMap[q.Rule.Text][q.QuestionNumber].Answers, option),
+				IsAnswer:   slices.Contains(answerMap[q.Rule.ID][q.QuestionNumber].Answers, option),
 			}
 			choices = append(choices, c)
 		} else {
@@ -156,7 +157,7 @@ func toQuestion(id int, tokens []token.Token, answerMap map[string]map[int]Answe
 	q.Choices = choices
 
 	var references []Reference
-	for _, r := range answerMap[q.Rule.Text][q.QuestionNumber].References {
+	for _, r := range answerMap[q.Rule.ID][q.QuestionNumber].References {
 		references = append(references, Reference{
 			QuestionID: id,
 			Text:       r,

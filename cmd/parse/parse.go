@@ -74,18 +74,18 @@ func handleOutput(allQuestions []parser.Question, formatType string) {
 		var allChoices []parser.Choice
 		var allReferences []parser.Reference
 		var allRules []parser.Rule
-		questionSQLText := "INSERT INTO question (id, text, rule, question_number) VALUES\n"
+		questionSQLText := "INSERT INTO question (id, text, rule_id, question_number) VALUES\n"
 
 		for idx, q := range allQuestions {
 			allChoices = append(allChoices, q.Choices...)
 			allReferences = append(allReferences, q.References...)
 			if !slices.ContainsFunc(allRules, func(r parser.Rule) bool {
-				return r.Text == q.Rule.Text
+				return r.ID == q.Rule.ID
 			}) {
 				allRules = append(allRules, q.Rule)
 			}
 
-			questionSQLText += fmt.Sprintf("(%d, '%s', '%s', %d)", q.ID, q.Text, q.Rule.Text, q.QuestionNumber)
+			questionSQLText += fmt.Sprintf("(%d, '%s', '%s', %d)", q.ID, q.Text, q.Rule.ID, q.QuestionNumber)
 			if (idx + 1) != len(allQuestions) {
 				questionSQLText += ",\n"
 			}
@@ -110,10 +110,11 @@ func handleOutput(allQuestions []parser.Question, formatType string) {
 		}
 		referenceSQLText += ";\n\n"
 
-		ruleSQLText := "INSERT INTO rule (text, sort_order) VALUES\n"
+		ruleSQLText := "INSERT INTO rule (id, name, sort_order) VALUES\n"
 		for idx, r := range allRules {
 			r.SortOrder = idx
-			ruleSQLText += fmt.Sprintf("('%s', %d)", r.Text, r.SortOrder)
+			// rule name will be empty here as we can only get it in the rules document
+			ruleSQLText += fmt.Sprintf("('%s','', %d)", r.ID, r.SortOrder)
 			if (idx + 1) != len(allRules) {
 				ruleSQLText += ",\n"
 			}
