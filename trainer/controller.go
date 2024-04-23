@@ -2,7 +2,6 @@ package trainer
 
 import (
 	"context"
-	"fmt"
 	"html/template"
 	"io/fs"
 	"log"
@@ -35,26 +34,22 @@ func (c *Controller) Home(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error parsing template: %s", err)
 	}
-	err = tmpl.Execute(w, nil)
-	if err != nil {
-		log.Printf("Error executing template: %s", err)
-	}
 	search, err := getQueryStrings(r, "search")
+	if err != nil {
+		log.Printf("Error parsing form: %s", err)
+	}
 	searchString := ""
 	if len(search) != 0 {
 		searchString = search[0]
-	}
-	if err != nil {
-		log.Printf("Error parsing form: %s", err)
 	}
 	questions, err := c.service.ListQuestions(r.Context(), nil, searchString, 10)
 	if err != nil {
 		log.Printf("Error getting questions: %s", err)
 	}
-	for _, q := range questions {
-		fmt.Println(q)
+	err = tmpl.Execute(w, questions)
+	if err != nil {
+		log.Printf("Error executing template: %s", err)
 	}
-
 }
 
 func (c *Controller) RandomQuestion(w http.ResponseWriter, _ *http.Request) {

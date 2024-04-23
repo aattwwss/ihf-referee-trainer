@@ -1,2 +1,16 @@
 {{block "content" .}}
+    <table>
+        <tr>
+            <th>Rule</th>
+            <th>Question Number</th>
+            <th>Question</th>
+        </tr>
+        {{range .}}
+            <tr>
+                <td>{{.Rule}}</td>
+                <td>{{.QuestionNumber}}</td>
+                <td>{{.Text}}</td>
+            </tr>
+        {{end}}
+    </table>
 {{end}}

@@ -1,3 +1,57 @@
+.site-header {
+    background-color: #f2f2f2;
+    padding: 10px 0;
+    margin-bottom: 100px;
+    color: #333;
+}
+
+.site-header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /*   max-width: 1200px; */
+    margin: 0 auto;
+    padding: 0 10px;
+}
+
+.site-header-container a {
+    color : #333;
+    text-decoration: none;
+}
+
+.logo {
+    width: 50px;
+    height: auto;
+    margin: 0 10px;
+}
+
+.site-name {
+    font-size: 24px;
+    font-weight: bold;
+    margin-right: auto; /* Aligns the site name to the left */
+}
+
+.navigation {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+.navigation li {
+    margin-left: 20px; /* Add space between navigation items */
+}
+
+.navigation li:first-child {
+    margin-left: auto; /* Aligns the first navigation item to the right */
+}
+
+.navigation a {
+    color: #333;
+    text-decoration: none;
+    font-weight: bold;
+}
+
 /* Apply the provided image as the textured background to the entire site */
 body {
     font-family: "Roboto", sans-serif;
@@ -8,7 +62,6 @@ body {
     background-repeat: repeat;
 }
 
-/* Add your CSS styles here */
 .card-container {
     max-width: 900px;
     margin: 20px auto;
