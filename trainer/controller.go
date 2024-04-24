@@ -14,7 +14,7 @@ import (
 type Service interface {
 	GetRandomQuestion(ctx context.Context, rules []string) (*Question, error)
 	GetChoicesByQuestionID(ctx context.Context, questionID int) ([]Choice, error)
-	ListQuestions(ctx context.Context, rules []string, search string, limit int) ([]Question, error)
+	ListQuestions(ctx context.Context, rules []string, search string, lastRuleSortOrder int, lastQuestionNumber int, limit int) ([]Question, error)
 }
 
 type Controller struct {
@@ -34,15 +34,21 @@ func (c *Controller) Home(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error parsing template: %s", err)
 	}
-	search, err := getQueryStrings(r, "search")
+	err = tmpl.Execute(w, nil)
 	if err != nil {
-		log.Printf("Error parsing form: %s", err)
+		log.Printf("Error executing template: %s", err)
 	}
-	searchString := ""
-	if len(search) != 0 {
-		searchString = search[0]
+}
+
+func (c *Controller) QuestionList(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFS(c.html, "questionList.tmpl")
+	if err != nil {
+		log.Printf("Error parsing template: %s", err)
 	}
-	questions, err := c.service.ListQuestions(r.Context(), nil, searchString, 10)
+	search := queryParamString(r, "search", "goal-area")
+	lastRuleSortOrder := queryParamInt(r, "lastRuleSortOrder", 0)
+	lastQuestionNumber := queryParamInt(r, "lastQuestionNumber", 0)
+	questions, err := c.service.ListQuestions(r.Context(), nil, search, lastRuleSortOrder, lastQuestionNumber, 10)
 	if err != nil {
 		log.Printf("Error getting questions: %s", err)
 	}
@@ -72,7 +78,7 @@ func (c *Controller) NewQuestion(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error getting random question: %s", err)
 	}
-	tmpl, err := template.ParseFS(c.html, "quiz.tmpl")
+	tmpl, err := template.ParseFS(c.html, "question.tmpl")
 	if err != nil {
 		log.Printf("Error parsing template: %s", err)
 	}
@@ -127,4 +133,24 @@ func getQueryStrings(r *http.Request, query string) ([]string, error) {
 		ss = append(ss, strings.Split(s, ",")...)
 	}
 	return ss, nil
+}
+
+func queryParamString(r *http.Request, query string, defaultValue string) string {
+	if s := r.URL.Query().Get(query); s != "" {
+		return s
+	}
+	return defaultValue
+}
+
+func queryParamInt(r *http.Request, query string, defaultValue int) int {
+	s := r.URL.Query().Get(query)
+	if s == "" {
+		return 0
+	}
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		log.Print("Error parsing int: ", err)
+		return defaultValue
+	}
+	return i
 }

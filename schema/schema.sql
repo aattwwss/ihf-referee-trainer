@@ -33,3 +33,7 @@ create table
     question_id bigint references question (id),
     text        text not null
 );
+
+ALTER TABLE question ADD COLUMN tsv tsvector;
+UPDATE question SET tsv = setweight(to_tsvector(text), 'A');
+CREATE INDEX idx_question_tsv ON question USING GIN(tsv);

@@ -25,7 +25,7 @@ func (r *QuestionRepository) GetRandomQuestion(ctx context.Context, rules []stri
 		}
 		rules = allRules
 	}
-	query := fmt.Sprintf("SELECT * FROM question WHERE rule = ANY($1) ORDER BY RANDOM() LIMIT 1")
+	query := fmt.Sprintf("SELECT id, text, rule_id, question_number FROM question WHERE rule_id = ANY($1) ORDER BY RANDOM() LIMIT 1")
 	rows, err := r.db.Query(ctx, query, rules)
 	if err != nil {
 		return nil, err
@@ -147,7 +147,9 @@ func (r *QuestionRepository) GetAllDistinctRuleIDs(ctx context.Context) ([]strin
 	return rules, nil
 }
 
-func (r *QuestionRepository) ListQuestions(ctx context.Context, ruleIDs []string, search string, limit int) ([]Question, error) {
+// ListQuestions returns a list of questions
+// supports pagination using the rule sort order and question number of the last question to offset
+func (r *QuestionRepository) ListQuestions(ctx context.Context, ruleIDs []string, search string, lastRuleSortOrder int, lastQuestionNumber int, limit int) ([]Question, error) {
 	if len(ruleIDs) == 0 {
 		allRules, err := r.GetAllDistinctRuleIDs(ctx)
 		if err != nil {
@@ -155,8 +157,17 @@ func (r *QuestionRepository) ListQuestions(ctx context.Context, ruleIDs []string
 		}
 		ruleIDs = allRules
 	}
-	query := fmt.Sprintf("SELECT q.id, q.text, q.rule_id, q.question_number FROM question q join rule r on q.rule_id = r.id WHERE r.id = ANY($1) ORDER BY r.sort_order, q.question_number limit $2")
-	rows, err := r.db.Query(ctx, query, ruleIDs, limit)
+	query := fmt.Sprintf(`
+		SELECT q.id, q.text, q.rule_id, q.question_number 
+		FROM question q join rule r on q.rule_id = r.id 
+		WHERE r.id = ANY($1) 
+			AND tsv @@ websearch_to_tsquery($2) 
+			AND r.sort_order >= $3
+			AND q.question_number > $4
+		ORDER BY r.sort_order, q.question_number 
+		LIMIT $5
+	`)
+	rows, err := r.db.Query(ctx, query, ruleIDs, search, lastRuleSortOrder, lastQuestionNumber, limit)
 	if err != nil {
 		return nil, err
 	}

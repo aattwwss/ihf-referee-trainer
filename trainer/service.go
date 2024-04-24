@@ -5,7 +5,7 @@ import "context"
 type Repository interface {
 	GetRandomQuestion(ctx context.Context, rules []string) (*Question, error)
 	GetChoicesByQuestionID(ctx context.Context, questionID int) ([]Choice, error)
-	ListQuestions(ctx context.Context, rules []string, search string, limit int) ([]Question, error)
+	ListQuestions(ctx context.Context, rules []string, search string, lastRuleSortOrder int, lastQuestionNumber int, limit int) ([]Question, error)
 }
 
 type QuestionService struct {
@@ -24,6 +24,6 @@ func (s *QuestionService) GetChoicesByQuestionID(ctx context.Context, questionID
 	return s.repository.GetChoicesByQuestionID(ctx, questionID)
 }
 
-func (s *QuestionService) ListQuestions(ctx context.Context, rules []string, search string, limit int) ([]Question, error) {
-	return s.repository.ListQuestions(ctx, rules, search, limit)
+func (s *QuestionService) ListQuestions(ctx context.Context, rules []string, search string, lastRuleSortOrder int, lastQuestionNumber int, limit int) ([]Question, error) {
+	return s.repository.ListQuestions(ctx, rules, search, lastRuleSortOrder, lastQuestionNumber, limit)
 }
