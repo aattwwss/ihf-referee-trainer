@@ -1,0 +1,23 @@
+{{range .Questions}}
+    <tr>
+        <td></td>
+        <td>{{.Text}}</td>
+        <td>{{.RuleName}}</td>
+        <td>{{.RuleQuestionNumber}}</td>
+    </tr>
+{{end}}
+    <tr id="load-more-tr">
+        <td colspan="4">
+            {{if .Questions}}
+            <button class='cell-button'
+                    hx-include=".search-bar"
+                    hx-get="/question-list?lastRuleSortOrder={{.LoadMoreParam.LastRuleSortOrder}}&lastQuestionNumber={{.LoadMoreParam.LastQuestionNumber}}&limit={{.LoadMoreParam.Limit}}"
+                    hx-target="#load-more-tr"
+                    hx-swap="outerHTML">
+               Load More
+            </button>
+            {{else}}
+                END
+            {{end}}
+        </td>
+    </tr>

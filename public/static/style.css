@@ -1,14 +1,67 @@
+.site-header {
+    background-color: #f2f2f2;
+    padding: 10px 0;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.site-header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /*   max-width: 1200px; */
+    margin: 0 auto;
+    /*padding: 0 10px;*/
+}
+
+.site-header-container a {
+    color: #333;
+    text-decoration: none;
+}
+
+.logo {
+    width: 50px;
+    height: auto;
+    margin: 0 10px;
+}
+
+.site-name {
+    font-size: 24px;
+    font-weight: bold;
+    margin-right: auto; /* Aligns the site name to the left */
+}
+
+.navigation {
+    list-style-type: none;
+    margin: 0 10px 0 0;
+    padding: 0;
+    display: flex;
+}
+
+.navigation li {
+    margin-left: 20px; /* Add space between navigation items */
+}
+
+.navigation li:first-child {
+    margin-left: auto; /* Aligns the first navigation item to the right */
+}
+
+.navigation a {
+    color: #333;
+    text-decoration: none;
+    font-weight: bold;
+}
+
 /* Apply the provided image as the textured background to the entire site */
 body {
     font-family: "Roboto", sans-serif;
     color: #000000; /* Set text color to white or a contrasting color */
     margin: 0;
     padding: 0;
-    background-image: url("/static/wallpaper.png");
+    /*background-image: url("/static/wallpaper.png");*/
     background-repeat: repeat;
 }
 
-/* Add your CSS styles here */
 .card-container {
     max-width: 900px;
     margin: 20px auto;
@@ -90,4 +143,98 @@ body {
 
 #quiz-form button[type="submit"]:hover {
     background-color: #0056b3; /* Change the button color on hover */
+}
+
+/* Style for the search input bar */
+.search-bar {
+    width: 50%;
+    padding: 10px;
+    box-sizing: border-box; /* Include padding in width calculation */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin: 10px auto;
+    display: block;
+
+}
+
+.table-container {
+    margin: 10px;
+    display: block;
+}
+
+/* Style for the table */
+.questions-table {
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: auto;
+    counter-reset: serial-number; /* Set the serial number counter to 0 */
+}
+
+.questions-table td:first-child:before {
+    counter-increment: serial-number; /* Increment the serial number counter */
+    content: counter(serial-number); /* Display the counter */
+}
+
+.questions-table tr:last-child td:first-child:before {
+    counter-increment: none; /* Don't increment the counter for the last row */
+    content: none; /* Hide the counter for the last row */
+}
+
+/* Style for table header cells */
+.questions-table th {
+    background-color: #f2f2f2;
+    border: 1px solid #dddddd;
+    padding: 10px; /* Padding on each side */
+    text-align: left;
+}
+
+/* Style for table data cells */
+.questions-table td {
+    border: 1px solid #dddddd;
+    padding: 10px; /* Padding on each side */
+    text-align: left;
+}
+
+/* Style for alternate rows (optional) */
+.questions-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Hover effect (optional) */
+.questions-table tr:hover {
+    background-color: #e2e2e2;
+}
+
+.index-col {
+    width: 1%;
+}
+
+.question-col {
+    width: 89%;
+}
+
+.rule-col {
+    width: 10%;
+}
+
+.question-number-col {
+    width: 1%;
+}
+
+#load-more-tr td {
+    padding: 0;
+    text-align: center;
+}
+
+.cell-button {
+    width: 100%;
+    height: 100%;
+    background-color: #f2f2f2;
+    border: 1px solid #dddddd;
+    padding: 10px; /* Padding on each side */
+    cursor: pointer;
+}
+
+.cell-button:hover {
+    background-color: #e2e2e2;
 }

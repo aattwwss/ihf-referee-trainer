@@ -14,6 +14,7 @@ import (
 type Service interface {
 	GetRandomQuestion(ctx context.Context, rules []string) (*Question, error)
 	GetChoicesByQuestionID(ctx context.Context, questionID int) ([]Choice, error)
+	ListQuestions(ctx context.Context, rules []string, search string, lastRuleSortOrder int, lastQuestionNumber int, limit int) ([]Question, error)
 }
 
 type Controller struct {
@@ -25,6 +26,83 @@ func NewController(service Service, html fs.FS) *Controller {
 	return &Controller{
 		service: service,
 		html:    html,
+	}
+}
+
+func (c *Controller) Home(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFS(c.html, "base.tmpl", "home.tmpl")
+	if err != nil {
+		log.Printf("Error parsing template: %s", err)
+	}
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		log.Printf("Error executing template: %s", err)
+	}
+}
+
+type QuestionListPageData struct {
+	Questions     []QuestionData
+	LoadMoreParam LoadMoreParam
+}
+
+type QuestionData struct {
+	Index              int
+	RuleID             string
+	RuleName           string
+	RuleQuestionNumber string
+	Text               string
+}
+
+type LoadMoreParam struct {
+	Search             string
+	LastRuleSortOrder  int
+	LastQuestionNumber int
+	LastIndex          int
+	Limit              int
+}
+
+func (c *Controller) QuestionList(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFS(c.html, "questionList.tmpl")
+	if err != nil {
+		log.Printf("Error parsing template: %s", err)
+	}
+	search := strings.TrimSpace(queryParamString(r, "search", ""))
+	lastRuleSortOrder := queryParamInt(r, "lastRuleSortOrder", 0)
+	lastQuestionNumber := queryParamInt(r, "lastQuestionNumber", 0)
+	lastIndex := queryParamInt(r, "lastIndex", 0)
+	questions, err := c.service.ListQuestions(r.Context(), nil, search, lastRuleSortOrder, lastQuestionNumber, 5)
+	if err != nil {
+		log.Printf("Error getting questions: %s", err)
+	}
+
+	if len(questions) > 0 {
+		lastRuleSortOrder = questions[len(questions)-1].Rule.SortOrder
+		lastQuestionNumber = questions[len(questions)-1].QuestionNumber
+		lastIndex += len(questions)
+	}
+	var questionsData []QuestionData
+	for i, question := range questions {
+		questionsData = append(questionsData, QuestionData{
+			Index:              i + lastIndex,
+			RuleID:             question.Rule.ID,
+			RuleName:           question.Rule.Name,
+			RuleQuestionNumber: question.RuleQuestionNumber,
+			Text:               question.Text,
+		})
+	}
+	data := QuestionListPageData{
+		Questions: questionsData,
+		LoadMoreParam: LoadMoreParam{
+			LastRuleSortOrder:  lastRuleSortOrder,
+			LastQuestionNumber: lastQuestionNumber,
+			LastIndex:          lastIndex,
+			Limit:              10,
+		},
+	}
+
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		log.Printf("Error executing template: %s", err)
 	}
 }
 
@@ -48,7 +126,7 @@ func (c *Controller) NewQuestion(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error getting random question: %s", err)
 	}
-	tmpl, err := template.ParseFS(c.html, "quiz.tmpl")
+	tmpl, err := template.ParseFS(c.html, "question.tmpl")
 	if err != nil {
 		log.Printf("Error parsing template: %s", err)
 	}
@@ -103,4 +181,24 @@ func getQueryStrings(r *http.Request, query string) ([]string, error) {
 		ss = append(ss, strings.Split(s, ",")...)
 	}
 	return ss, nil
+}
+
+func queryParamString(r *http.Request, query string, defaultValue string) string {
+	if s := r.URL.Query().Get(query); s != "" {
+		return s
+	}
+	return defaultValue
+}
+
+func queryParamInt(r *http.Request, query string, defaultValue int) int {
+	s := r.URL.Query().Get(query)
+	if s == "" {
+		return 0
+	}
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		log.Print("Error parsing int: ", err)
+		return defaultValue
+	}
+	return i
 }

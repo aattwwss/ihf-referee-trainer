@@ -17,14 +17,27 @@
     <meta name="msapplication-config" content="static/browserconfig.xml">
     <meta name="theme-color" content="#ffffff">
 
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
     <script src="static/script.js" defer></script>
     <script src="static/htmx.min.js" defer></script>
 </head>
 
 <body>
-    <div class="card-container"> <h1>IHF Referee Rules Trainer</h1> </div>
-    {{template "content" .}}
+<header class="site-header">
+    <div class="site-header-container">
+        <a href="/" class="logo">
+            <img src="static/favicon.ico" alt="IHF Referee Trainer">
+        </a>
+        <a href="/" class="site-name">IHF Referee Trainer</a>
+        <nav>
+            <ul class="navigation">
+                <li><a href="/random-question">Random Question</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+{{/*<div class="card-container"><h1>IHF Referee Rules Trainer</h1></div>*/}}
+{{template "content" .}}
 </body>
 
 </html>

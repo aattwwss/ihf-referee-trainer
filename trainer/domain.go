@@ -3,7 +3,7 @@ package trainer
 type QuestionEntity struct {
 	ID             int
 	Text           string
-	Rule           string
+	RuleID         string
 	QuestionNumber int
 }
 
@@ -15,6 +15,12 @@ type ChoiceEntity struct {
 	IsAnswer   bool
 }
 
+type RuleEntity struct {
+	ID        string
+	Name      string
+	SortOrder int
+}
+
 type ReferenceEntity struct {
 	ID         int
 	QuestionId int
@@ -24,7 +30,7 @@ type ReferenceEntity struct {
 type Question struct {
 	ID                 int
 	Text               string
-	Rule               string
+	Rule               Rule
 	QuestionNumber     int
 	RuleQuestionNumber string
 	Choices            []Choice
@@ -37,6 +43,12 @@ type Choice struct {
 	Text       string
 	IsAnswer   bool
 	IsSelected bool
+}
+
+type Rule struct {
+	ID        string
+	Name      string
+	SortOrder int
 }
 
 type Reference struct {
