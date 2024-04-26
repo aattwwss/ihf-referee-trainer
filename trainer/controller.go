@@ -45,7 +45,7 @@ func (c *Controller) QuestionList(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error parsing template: %s", err)
 	}
-	search := queryParamString(r, "search", "goal-area")
+	search := strings.TrimSpace(queryParamString(r, "search", ""))
 	lastRuleSortOrder := queryParamInt(r, "lastRuleSortOrder", 0)
 	lastQuestionNumber := queryParamInt(r, "lastQuestionNumber", 0)
 	questions, err := c.service.ListQuestions(r.Context(), nil, search, lastRuleSortOrder, lastQuestionNumber, 10)

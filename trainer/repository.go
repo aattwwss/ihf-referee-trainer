@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"strings"
 )
 
 type QuestionRepository struct {
@@ -161,13 +162,13 @@ func (r *QuestionRepository) ListQuestions(ctx context.Context, ruleIDs []string
 		SELECT q.id, q.text, q.rule_id, q.question_number 
 		FROM question q join rule r on q.rule_id = r.id 
 		WHERE r.id = ANY($1) 
-			AND tsv @@ websearch_to_tsquery($2) 
+			AND ($2 = '' OR tsv @@ websearch_to_tsquery($2))
 			AND r.sort_order >= $3
 			AND q.question_number > $4
 		ORDER BY r.sort_order, q.question_number 
 		LIMIT $5
 	`)
-	rows, err := r.db.Query(ctx, query, ruleIDs, search, lastRuleSortOrder, lastQuestionNumber, limit)
+	rows, err := r.db.Query(ctx, query, ruleIDs, strings.TrimSpace(search), lastRuleSortOrder, lastQuestionNumber, limit)
 	if err != nil {
 		return nil, err
 	}
