@@ -40,6 +40,27 @@ func (c *Controller) Home(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type QuestionListPageData struct {
+	Questions     []QuestionData
+	LoadMoreParam LoadMoreParam
+}
+
+type QuestionData struct {
+	Index              int
+	RuleID             string
+	RuleName           string
+	RuleQuestionNumber string
+	Text               string
+}
+
+type LoadMoreParam struct {
+	Search             string
+	LastRuleSortOrder  int
+	LastQuestionNumber int
+	LastIndex          int
+	Limit              int
+}
+
 func (c *Controller) QuestionList(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFS(c.html, "questionList.tmpl")
 	if err != nil {
@@ -48,11 +69,38 @@ func (c *Controller) QuestionList(w http.ResponseWriter, r *http.Request) {
 	search := strings.TrimSpace(queryParamString(r, "search", ""))
 	lastRuleSortOrder := queryParamInt(r, "lastRuleSortOrder", 0)
 	lastQuestionNumber := queryParamInt(r, "lastQuestionNumber", 0)
-	questions, err := c.service.ListQuestions(r.Context(), nil, search, lastRuleSortOrder, lastQuestionNumber, 10)
+	lastIndex := queryParamInt(r, "lastIndex", 0)
+	questions, err := c.service.ListQuestions(r.Context(), nil, search, lastRuleSortOrder, lastQuestionNumber, 5)
 	if err != nil {
 		log.Printf("Error getting questions: %s", err)
 	}
-	err = tmpl.Execute(w, questions)
+
+	if len(questions) > 0 {
+		lastRuleSortOrder = questions[len(questions)-1].Rule.SortOrder
+		lastQuestionNumber = questions[len(questions)-1].QuestionNumber
+		lastIndex += len(questions)
+	}
+	var questionsData []QuestionData
+	for i, question := range questions {
+		questionsData = append(questionsData, QuestionData{
+			Index:              i + lastIndex,
+			RuleID:             question.Rule.ID,
+			RuleName:           question.Rule.Name,
+			RuleQuestionNumber: question.RuleQuestionNumber,
+			Text:               question.Text,
+		})
+	}
+	data := QuestionListPageData{
+		Questions: questionsData,
+		LoadMoreParam: LoadMoreParam{
+			LastRuleSortOrder:  lastRuleSortOrder,
+			LastQuestionNumber: lastQuestionNumber,
+			LastIndex:          lastIndex,
+			Limit:              10,
+		},
+	}
+
+	err = tmpl.Execute(w, data)
 	if err != nil {
 		log.Printf("Error executing template: %s", err)
 	}

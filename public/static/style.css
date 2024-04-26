@@ -33,7 +33,7 @@
 
 .navigation {
     list-style-type: none;
-    margin: 0;
+    margin: 0 10px 0 0;
     padding: 0;
     display: flex;
 }
@@ -162,6 +162,17 @@ table {
     border-collapse: collapse;
     display: block;
     margin: 10px 10px;
+    counter-reset: serial-number; /* Set the serial number counter to 0 */
+}
+
+table td:first-child:before {
+    counter-increment: serial-number; /* Increment the serial number counter */
+    content: counter(serial-number); /* Display the counter */
+}
+
+table tr:last-child td:first-child:before {
+    counter-increment: none; /* Don't increment the counter for the last row */
+    content: none; /* Hide the counter for the last row */
 }
 
 /* Style for table header cells */
@@ -186,5 +197,23 @@ tr:nth-child(even) {
 
 /* Hover effect (optional) */
 tr:hover {
+    background-color: #e2e2e2;
+}
+
+#load-more-tr td {
+    padding: 0;
+    text-align: center;
+}
+
+.cell-button {
+    width: 100%;
+    height: 100%;
+    background-color: #f2f2f2;
+    border: 1px solid #dddddd;
+    padding: 10px; /* Padding on each side */
+    cursor: pointer;
+}
+
+.cell-button:hover {
     background-color: #e2e2e2;
 }

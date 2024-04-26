@@ -3,19 +3,19 @@
         <input class="search-bar" type="search"
                name="search" placeholder="Begin Typing To Search..."
                hx-get="/question-list"
-               hx-trigger="load, input changed delay:100ms, search"
+               hx-trigger="load, input changed delay:500ms, search"
                hx-target="#question-list">
     </label>
     <table>
         <thead>
         <tr>
-            <th>Rule</th>
+            <th></th>
+            <th>Question</th>
             <th>Rule Name</th>
             <th>Rule Question Number</th>
-            <th>Question</th>
         </tr>
         </thead>
-        <tbody class="question-list" id="question-list">
+        <tbody id="question-list">
         </tbody>
     </table>
 {{end}}
