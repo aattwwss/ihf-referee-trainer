@@ -6,16 +6,24 @@
                hx-trigger="load, input changed delay:500ms, search"
                hx-target="#question-list">
     </label>
-    <table>
-        <thead>
-        <tr>
-            <th></th>
-            <th>Question</th>
-            <th>Rule Name</th>
-            <th>Rule Question Number</th>
-        </tr>
-        </thead>
-        <tbody id="question-list">
-        </tbody>
-    </table>
+    <div class="table-container">
+        <table class="questions-table">
+            <colgroup>
+                <col class="index-col"/>
+                <col class="question-col"/>
+                <col class="rule-col"/>
+                <col class="question-number-col"/>
+            </colgroup>
+            <thead>
+            <tr>
+                <th></th>
+                <th>Question</th>
+                <th>Rule Name</th>
+                <th>Rule Question Number</th>
+            </tr>
+            </thead>
+            <tbody id="question-list">
+            </tbody>
+        </table>
+    </div>
 {{end}}

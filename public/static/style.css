@@ -15,7 +15,7 @@
 }
 
 .site-header-container a {
-    color : #333;
+    color: #333;
     text-decoration: none;
 }
 
@@ -157,26 +157,31 @@ body {
 
 }
 
-/* Style for the table */
-table {
-    border-collapse: collapse;
+.table-container {
+    margin: 10px;
     display: block;
-    margin: 10px 10px;
+}
+
+/* Style for the table */
+.questions-table {
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: auto;
     counter-reset: serial-number; /* Set the serial number counter to 0 */
 }
 
-table td:first-child:before {
+.questions-table td:first-child:before {
     counter-increment: serial-number; /* Increment the serial number counter */
     content: counter(serial-number); /* Display the counter */
 }
 
-table tr:last-child td:first-child:before {
+.questions-table tr:last-child td:first-child:before {
     counter-increment: none; /* Don't increment the counter for the last row */
     content: none; /* Hide the counter for the last row */
 }
 
 /* Style for table header cells */
-th {
+.questions-table th {
     background-color: #f2f2f2;
     border: 1px solid #dddddd;
     padding: 10px; /* Padding on each side */
@@ -184,20 +189,36 @@ th {
 }
 
 /* Style for table data cells */
-td {
+.questions-table td {
     border: 1px solid #dddddd;
     padding: 10px; /* Padding on each side */
     text-align: left;
 }
 
 /* Style for alternate rows (optional) */
-tr:nth-child(even) {
+.questions-table tr:nth-child(even) {
     background-color: #f9f9f9;
 }
 
 /* Hover effect (optional) */
-tr:hover {
+.questions-table tr:hover {
     background-color: #e2e2e2;
+}
+
+.index-col {
+    width: 1%;
+}
+
+.question-col {
+    width: 89%;
+}
+
+.rule-col {
+    width: 10%;
+}
+
+.question-number-col {
+    width: 1%;
 }
 
 #load-more-tr td {
