@@ -158,7 +158,8 @@ body {
 }
 
 .table-container {
-    margin: 10px;
+    width: 50%;
+    margin: 10px auto;
     display: block;
 }
 

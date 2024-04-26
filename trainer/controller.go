@@ -70,7 +70,7 @@ func (c *Controller) QuestionList(w http.ResponseWriter, r *http.Request) {
 	lastRuleSortOrder := queryParamInt(r, "lastRuleSortOrder", 0)
 	lastQuestionNumber := queryParamInt(r, "lastQuestionNumber", 0)
 	lastIndex := queryParamInt(r, "lastIndex", 0)
-	questions, err := c.service.ListQuestions(r.Context(), nil, search, lastRuleSortOrder, lastQuestionNumber, 5)
+	questions, err := c.service.ListQuestions(r.Context(), nil, search, lastRuleSortOrder, lastQuestionNumber, 10)
 	if err != nil {
 		log.Printf("Error getting questions: %s", err)
 	}
