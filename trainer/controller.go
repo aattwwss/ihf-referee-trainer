@@ -12,6 +12,7 @@ import (
 )
 
 type Service interface {
+	GetQuestionByID(ctx context.Context, id int) (*Question, error)
 	GetRandomQuestion(ctx context.Context, rules []string) (*Question, error)
 	GetChoicesByQuestionID(ctx context.Context, questionID int) ([]Choice, error)
 	ListQuestions(ctx context.Context, rules []string, search string, lastRuleSortOrder int, lastQuestionNumber int, limit int) ([]Question, error)
@@ -46,7 +47,7 @@ type QuestionListPageData struct {
 }
 
 type QuestionData struct {
-	Index              int
+	ID                 int
 	RuleID             string
 	RuleName           string
 	RuleQuestionNumber string
@@ -61,6 +62,18 @@ type LoadMoreParam struct {
 	Limit              int
 }
 
+func (c *Controller) QuestionByID(w http.ResponseWriter, r *http.Request) {
+	id := queryParamInt(r, "id", 0)
+	tmpl, err := template.ParseFS(c.html, "base.tmpl", "questionByID.tmpl")
+	if err != nil {
+		log.Printf("Error parsing template: %s", err)
+	}
+	err = tmpl.Execute(w, id)
+	if err != nil {
+		log.Printf("Error executing template: %s", err)
+	}
+}
+
 func (c *Controller) QuestionList(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFS(c.html, "questionList.tmpl")
 	if err != nil {
@@ -69,7 +82,6 @@ func (c *Controller) QuestionList(w http.ResponseWriter, r *http.Request) {
 	search := strings.TrimSpace(queryParamString(r, "search", ""))
 	lastRuleSortOrder := queryParamInt(r, "lastRuleSortOrder", 0)
 	lastQuestionNumber := queryParamInt(r, "lastQuestionNumber", 0)
-	lastIndex := queryParamInt(r, "lastIndex", 0)
 	questions, err := c.service.ListQuestions(r.Context(), nil, search, lastRuleSortOrder, lastQuestionNumber, 10)
 	if err != nil {
 		log.Printf("Error getting questions: %s", err)
@@ -78,12 +90,11 @@ func (c *Controller) QuestionList(w http.ResponseWriter, r *http.Request) {
 	if len(questions) > 0 {
 		lastRuleSortOrder = questions[len(questions)-1].Rule.SortOrder
 		lastQuestionNumber = questions[len(questions)-1].QuestionNumber
-		lastIndex += len(questions)
 	}
 	var questionsData []QuestionData
-	for i, question := range questions {
+	for _, question := range questions {
 		questionsData = append(questionsData, QuestionData{
-			Index:              i + lastIndex,
+			ID:                 question.ID,
 			RuleID:             question.Rule.ID,
 			RuleName:           question.Rule.Name,
 			RuleQuestionNumber: question.RuleQuestionNumber,
@@ -95,7 +106,6 @@ func (c *Controller) QuestionList(w http.ResponseWriter, r *http.Request) {
 		LoadMoreParam: LoadMoreParam{
 			LastRuleSortOrder:  lastRuleSortOrder,
 			LastQuestionNumber: lastQuestionNumber,
-			LastIndex:          lastIndex,
 			Limit:              10,
 		},
 	}
@@ -107,7 +117,7 @@ func (c *Controller) QuestionList(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) RandomQuestion(w http.ResponseWriter, _ *http.Request) {
-	tmpl, err := template.ParseFS(c.html, "base.tmpl", "randomQuestion.tmpl")
+	tmpl, err := template.ParseFS(c.html, "base.tmpl", "questionByID.tmpl")
 	if err != nil {
 		log.Printf("Error parsing template: %s", err)
 	}
@@ -118,13 +128,23 @@ func (c *Controller) RandomQuestion(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (c *Controller) NewQuestion(w http.ResponseWriter, r *http.Request) {
-	rules, err := getQueryStrings(r, "rules")
-	if err != nil {
-		log.Printf("Error getting query strings: %s", err)
-	}
-	question, err := c.service.GetRandomQuestion(r.Context(), rules)
-	if err != nil {
-		log.Printf("Error getting random question: %s", err)
+	id := queryParamInt(r, "id", 0)
+	var question *Question
+	var err error
+	if id == 0 {
+		rules, err := getQueryStrings(r, "rules")
+		if err != nil {
+			log.Printf("Error getting query strings: %s", err)
+		}
+		question, err = c.service.GetRandomQuestion(r.Context(), rules)
+		if err != nil {
+			log.Printf("Error getting random question: %s", err)
+		}
+	} else {
+		question, err = c.service.GetQuestionByID(r.Context(), id)
+		if err != nil {
+			log.Printf("Error getting question: %s", err)
+		}
 	}
 	tmpl, err := template.ParseFS(c.html, "question.tmpl")
 	if err != nil {

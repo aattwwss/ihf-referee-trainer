@@ -4,10 +4,11 @@
         <td>{{.Text}}</td>
         <td>{{.RuleName}}</td>
         <td>{{.RuleQuestionNumber}}</td>
+        <td><a class="view-question-link" href="/question?id={{.ID}}"> View</a></td>
     </tr>
 {{end}}
     <tr id="load-more-tr">
-        <td colspan="4">
+        <td colspan="5">
             {{if .Questions}}
             <button class='cell-button'
                     hx-include=".search-bar"
