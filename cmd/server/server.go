@@ -57,6 +57,7 @@ func main() {
 	http.HandleFunc("GET /", controller.Home)
 	http.HandleFunc("GET /random-question", controller.RandomQuestion)
 	http.HandleFunc("GET /question-list", controller.QuestionList)
+	http.HandleFunc("GET /question", controller.QuestionByID)
 
 	http.HandleFunc("POST /submit/", controller.Result)
 	http.HandleFunc("GET /new-question", controller.NewQuestion)

@@ -3,6 +3,7 @@ package trainer
 import "context"
 
 type Repository interface {
+	GetQuestionByID(ctx context.Context, id int) (*Question, error)
 	GetRandomQuestion(ctx context.Context, rules []string) (*Question, error)
 	GetChoicesByQuestionID(ctx context.Context, questionID int) ([]Choice, error)
 	ListQuestions(ctx context.Context, rules []string, search string, lastRuleSortOrder int, lastQuestionNumber int, limit int) ([]Question, error)
@@ -14,6 +15,10 @@ type QuestionService struct {
 
 func NewService(repository Repository) *QuestionService {
 	return &QuestionService{repository: repository}
+}
+
+func (s *QuestionService) GetQuestionByID(ctx context.Context, id int) (*Question, error) {
+	return s.repository.GetQuestionByID(ctx, id)
 }
 
 func (s *QuestionService) GetRandomQuestion(ctx context.Context, rules []string) (*Question, error) {

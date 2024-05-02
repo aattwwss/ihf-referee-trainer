@@ -154,11 +154,11 @@ body {
     border-radius: 5px;
     margin: 10px auto;
     display: block;
-
 }
 
 .table-container {
-    width: 50%;
+    max-width: 50%;
+    width: 70em;
     margin: 10px auto;
     display: block;
 }
@@ -166,7 +166,7 @@ body {
 /* Style for the table */
 .questions-table {
     border-collapse: collapse;
-    width: 100%;
+    /*width: 100%;*/
     table-layout: auto;
     counter-reset: serial-number; /* Set the serial number counter to 0 */
 }
@@ -211,15 +211,24 @@ body {
 }
 
 .question-col {
-    width: 89%;
+    width: 80%;
 }
 
 .rule-col {
-    width: 10%;
+    width: 15%;
 }
 
 .question-number-col {
     width: 1%;
+}
+
+.view-question-col {
+    width: 1%;
+}
+
+.view-question-link {
+    text-decoration: none;
+    color: #0074d9;
 }
 
 #load-more-tr td {

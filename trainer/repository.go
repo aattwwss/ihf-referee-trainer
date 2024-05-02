@@ -18,6 +18,52 @@ func NewRepository(db *pgxpool.Pool) *QuestionRepository {
 	}
 }
 
+func (r *QuestionRepository) GetQuestionByID(ctx context.Context, id int) (*Question, error) {
+	query := fmt.Sprintf("SELECT id, text, rule_id, question_number FROM question WHERE id = $1")
+	rows, err := r.db.Query(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+	questionEntity, err := pgx.CollectOneRow(rows, pgx.RowToStructByPos[QuestionEntity])
+	if err != nil {
+		return nil, err
+	}
+	query = fmt.Sprintf("SELECT * FROM choice WHERE question_id = $1 order by option")
+	rows, err = r.db.Query(ctx, query, questionEntity.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	choiceEntities, err := pgx.CollectRows(rows, pgx.RowToStructByPos[ChoiceEntity])
+	var choices []Choice
+	for _, choiceEntity := range choiceEntities {
+		choices = append(choices, Choice{
+			ID:         choiceEntity.ID,
+			Option:     choiceEntity.Option,
+			Text:       choiceEntity.Text,
+			IsAnswer:   choiceEntity.IsAnswer,
+			IsSelected: false,
+		})
+	}
+	separator := "."
+	if questionEntity.RuleID == "SAR" {
+		separator = ""
+	}
+	ruleQuestionNumber := fmt.Sprintf("%s%s%d", questionEntity.RuleID, separator, questionEntity.QuestionNumber)
+	rule, err := r.FindRuleByID(ctx, questionEntity.RuleID)
+	if err != nil {
+		return nil, err
+	}
+	return &Question{
+		ID:                 questionEntity.ID,
+		Text:               questionEntity.Text,
+		Rule:               *rule,
+		QuestionNumber:     questionEntity.QuestionNumber,
+		RuleQuestionNumber: ruleQuestionNumber,
+		Choices:            choices,
+	}, nil
+}
+
 func (r *QuestionRepository) GetRandomQuestion(ctx context.Context, rules []string) (*Question, error) {
 	if len(rules) == 0 {
 		allRules, err := r.GetAllDistinctRuleIDs(ctx)

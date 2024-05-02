@@ -4,14 +4,15 @@
         <td>{{.Text}}</td>
         <td>{{.RuleName}}</td>
         <td>{{.RuleQuestionNumber}}</td>
+        <td><a class="view-question-link" href="/question?id={{.ID}}"> View</a></td>
     </tr>
 {{end}}
     <tr id="load-more-tr">
-        <td colspan="4">
+        <td colspan="5">
             {{if .Questions}}
             <button class='cell-button'
                     hx-include=".search-bar"
-                    hx-get="/question-list?lastRuleSortOrder={{.LoadMoreParam.LastRuleSortOrder}}&lastQuestionNumber={{.LoadMoreParam.LastQuestionNumber}}&limit={{.LoadMoreParam.Limit}}"
+                    hx-get="/question-list?lastRuleSortOrder={{.LoadMoreParam.LastRuleSortOrder}}&limit={{.LoadMoreParam.Limit}}"
                     hx-target="#load-more-tr"
                     hx-swap="outerHTML">
                Load More
