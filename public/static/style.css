@@ -59,7 +59,8 @@ body {
     margin: 0;
     padding: 0;
     /*background-image: url("/static/wallpaper.png");*/
-    background-repeat: repeat;
+    background: #ffffff;
+    /*background-repeat: repeat;*/
 }
 
 .card-container {

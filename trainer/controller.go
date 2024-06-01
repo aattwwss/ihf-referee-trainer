@@ -82,7 +82,8 @@ func (c *Controller) QuestionList(w http.ResponseWriter, r *http.Request) {
 	search := strings.TrimSpace(queryParamString(r, "search", ""))
 	lastRuleSortOrder := queryParamInt(r, "lastRuleSortOrder", 0)
 	lastQuestionNumber := queryParamInt(r, "lastQuestionNumber", 0)
-	questions, err := c.service.ListQuestions(r.Context(), nil, search, lastRuleSortOrder, lastQuestionNumber, 10)
+	limit := 10
+	questions, err := c.service.ListQuestions(r.Context(), nil, search, lastRuleSortOrder, lastQuestionNumber, limit)
 	if err != nil {
 		log.Printf("Error getting questions: %s", err)
 	}
