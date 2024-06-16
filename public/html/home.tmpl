@@ -1,31 +1,30 @@
 {{block "content" .}}
-    <label>
-        <input class="search-bar" type="search"
-               name="search" placeholder="Begin Typing To Search..."
-               hx-get="/question-list"
-               hx-trigger="load, input changed delay:500ms, search"
-               hx-target="#question-list">
-    </label>
-    <div class="table-container">
-        <table class="questions-table">
-            <colgroup>
-                <col class="index-col"/>
-                <col class="question-col"/>
-                <col class="rule-col"/>
-                <col class="question-number-col"/>
-                <col class="view-question-col"/>
-            </colgroup>
-            <thead>
-            <tr>
-                <th></th>
-                <th>Question</th>
-                <th>Rule Name</th>
-                <th>Rule Question Number</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody id="question-list">
-            </tbody>
-        </table>
+    <div class="questions-container">
+        {{range .}}
+            <div class="question-card" data-correct="{{.CorrectChoices}}" id="question{{.ID}}">
+                <div class="question-header">
+                    <div class="question-number">Question {{.ID}}:</div>
+                    <label class="read-toggle">
+                        <input type="checkbox" class="read-checkbox">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="question-text">{{.RuleQuestionNumber}}) {{.Text}}</div>
+                <div class="choices">
+                    {{range .Choices}}
+                        <label class="choice">
+                            <input type="checkbox" name="choice{{.ID}}" value="{{.Option}}"> {{.Text}}
+                        </label>
+                    {{end}}
+                </div>
+            </div>
+        {{end}}
     </div>
+    <div class="floating-menu" id="menu-button" tabindex="0">Rules</div>
+    <div class="menu-items" id="menu-items">
+        <div class="menu-item" onclick="scrollToQuestion('question1')">Question 1</div>
+        <div class="menu-item" onclick="scrollToQuestion('question2')">Question 2</div>
+        <div class="menu-item" onclick="scrollToQuestion('question3')">Question 3</div>
+    </div>
+    <button class="floating-toggle" id="toggle-button">Show Answer</button>
 {{end}}

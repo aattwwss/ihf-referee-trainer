@@ -18,6 +18,47 @@ func NewRepository(db *pgxpool.Pool) *QuestionRepository {
 	}
 }
 
+func (r *QuestionRepository) GetAllQuestions(ctx context.Context) ([]Question, error) {
+	query := fmt.Sprintf(`
+		SELECT q.id, q.text, q.rule_id, q.question_number 
+		FROM question q join rule r on q.rule_id = r.id 
+		ORDER BY r.sort_order, q.question_number 
+	`)
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	questionEntities, err := pgx.CollectRows(rows, pgx.RowToStructByPos[QuestionEntity])
+	if err != nil {
+		return nil, err
+	}
+	questionIds := make([]int, 0, len(questionEntities))
+	for _, questionEntity := range questionEntities {
+		questionIds = append(questionIds, questionEntity.ID)
+	}
+	choiceMap, err := r.FindChoicesByQuestionIds(ctx, questionIds...)
+	ruleIDs, err := r.GetAllDistinctRuleIDs(ctx)
+	rulesMap, err := r.FindRuleByIDs(ctx, ruleIDs...)
+	var questions []Question
+	for _, questionEntity := range questionEntities {
+		separator := "."
+		if questionEntity.RuleID == "SAR" {
+			separator = ""
+		}
+		ruleQuestionNumber := fmt.Sprintf("%s%s%d", questionEntity.RuleID, separator, questionEntity.QuestionNumber)
+		question := Question{
+			ID:                 questionEntity.ID,
+			Text:               questionEntity.Text,
+			Rule:               rulesMap[questionEntity.RuleID],
+			QuestionNumber:     questionEntity.QuestionNumber,
+			RuleQuestionNumber: ruleQuestionNumber,
+			Choices:            choiceMap[questionEntity.ID],
+		}
+		questions = append(questions, question)
+	}
+	return questions, nil
+}
+
 func (r *QuestionRepository) GetQuestionByID(ctx context.Context, id int) (*Question, error) {
 	query := fmt.Sprintf("SELECT id, text, rule_id, question_number FROM question WHERE id = $1")
 	rows, err := r.db.Query(ctx, query, id)

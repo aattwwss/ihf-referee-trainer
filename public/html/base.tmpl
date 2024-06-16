@@ -23,20 +23,25 @@
 </head>
 
 <body>
-<header class="site-header">
-    <div class="site-header-container">
-        <a href="/" class="logo">
-            <img src="static/favicon.ico" alt="IHF Referee Trainer">
-        </a>
-        <a href="/" class="site-name">IHF Referee Trainer</a>
-        <nav>
-            <ul class="navigation">
-                <li><a href="/random-question">Random Question</a></li>
-            </ul>
-        </nav>
+{{/*<header class="site-header">*/}}
+{{/*    <div class="site-header-container">*/}}
+{{/*        <a href="/" class="logo">*/}}
+{{/*            <img src="static/favicon.ico" alt="IHF Referee Trainer">*/}}
+{{/*        </a>*/}}
+{{/*        <a href="/" class="site-name">IHF Referee Trainer</a>*/}}
+{{/*        <nav>*/}}
+{{/*            <ul class="navigation">*/}}
+{{/*                <li><a href="/random-question">Random Question</a></li>*/}}
+{{/*            </ul>*/}}
+{{/*        </nav>*/}}
+{{/*    </div>*/}}
+{{/*</header>*/}}
+<header>
+    <div class="header-container">
+        <img src="static/favicon.ico" alt="IHF Referee Trainer">
+        <a href class="header-title">IHF Referee Trainer</a>
     </div>
 </header>
-{{/*<div class="card-container"><h1>IHF Referee Rules Trainer</h1></div>*/}}
 {{template "content" .}}
 </body>
 

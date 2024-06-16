@@ -12,6 +12,7 @@ import (
 )
 
 type Service interface {
+	GetAllQuestions(ctx context.Context) ([]Question, error)
 	GetQuestionByID(ctx context.Context, id int) (*Question, error)
 	GetRandomQuestion(ctx context.Context, rules []string) (*Question, error)
 	GetChoicesByQuestionID(ctx context.Context, questionID int) ([]Choice, error)
@@ -30,12 +31,49 @@ func NewController(service Service, html fs.FS) *Controller {
 	}
 }
 
+type QuestionDataV2 struct {
+	ID                 int
+	CorrectChoices     string
+	RuleQuestionNumber string
+	Text               string
+	Choices            []ChoiceDateV2
+}
+
+type ChoiceDateV2 struct {
+	ID     int
+	Option string
+	Text   string
+}
+
 func (c *Controller) Home(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFS(c.html, "base.tmpl", "home.tmpl")
 	if err != nil {
 		log.Printf("Error parsing template: %s", err)
 	}
-	err = tmpl.Execute(w, nil)
+	allQuestions, err := c.service.GetAllQuestions(r.Context())
+	var QuestionDataList []QuestionDataV2
+	for i, question := range allQuestions {
+		var choices []ChoiceDateV2
+		var correctChoices []string
+		for _, choice := range question.Choices {
+			if choice.IsAnswer {
+				correctChoices = append(correctChoices, choice.Option)
+			}
+			choices = append(choices, ChoiceDateV2{
+				ID:     choice.ID,
+				Option: choice.Option,
+				Text:   choice.Text,
+			})
+		}
+		QuestionDataList = append(QuestionDataList, QuestionDataV2{
+			ID:                 i + 1,
+			CorrectChoices:     strings.Join(correctChoices, ","),
+			RuleQuestionNumber: question.RuleQuestionNumber,
+			Text:               question.Text,
+			Choices:            choices,
+		})
+	}
+	err = tmpl.Execute(w, QuestionDataList)
 	if err != nil {
 		log.Printf("Error executing template: %s", err)
 	}
