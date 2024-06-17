@@ -120,6 +120,7 @@ document.getElementById('clear-button').addEventListener('click', function () {
     localStorage.setItem(CHOICE_CHECK_MAP_KEY, JSON.stringify({}));
 
     // Optionally, clear the answer highlights if they are visible
+    const isShowingAnswers = document.getElementById('toggle-button').className.includes('hide');
     const allQuestionCards = document.querySelectorAll('.question-card');
     allQuestionCards.forEach(card => {
         const choices = card.querySelectorAll('.choice input[type="checkbox"]');
@@ -127,7 +128,7 @@ document.getElementById('clear-button').addEventListener('click', function () {
         choices.forEach(choice => {
             const parentLabel = choice.parentElement;
             parentLabel.classList.remove('missing', 'wrong', 'correct');
-            if (correctAnswers.includes(choice.value)) {
+            if (isShowingAnswers && correctAnswers.includes(choice.value)) {
                 parentLabel.classList.add('missing');
             }
         });
