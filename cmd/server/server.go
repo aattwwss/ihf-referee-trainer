@@ -57,12 +57,12 @@ func main() {
 	http.HandleFunc("GET /", controller.Home)
 	http.HandleFunc("GET /feedback", controller.Feedback)
 	http.HandleFunc("POST /feedback", controller.SubmitFeedback)
-	http.HandleFunc("GET /random-question", controller.RandomQuestion)
-	http.HandleFunc("GET /question-list", controller.QuestionList)
-	http.HandleFunc("GET /question", controller.QuestionByID)
-
-	http.HandleFunc("POST /submit/", controller.Result)
-	http.HandleFunc("GET /new-question", controller.NewQuestion)
+	//http.HandleFunc("GET /random-question", controller.RandomQuestion)
+	//http.HandleFunc("GET /question-list", controller.QuestionList)
+	//http.HandleFunc("GET /question", controller.QuestionByID)
+	//
+	//http.HandleFunc("POST /submit/", controller.Result)
+	//http.HandleFunc("GET /new-question", controller.NewQuestion)
 	http.HandleFunc("GET /health", controller.Health)
 
 	// Set up and start the HTTP server on port 8080
