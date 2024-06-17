@@ -34,10 +34,12 @@ document.getElementById('toggle-button').addEventListener('click', function () {
         this.innerHTML = '<i class="fas fa-eye-slash"></i>';
         this.classList.add('hide');
     }
+    saveState();
 });
 
 const CHOICE_CHECK_MAP_KEY = 'choiceCheckMap';
 const READ_CHECK_MAP_KEY = 'readCheckMap';
+const SHOW_ANSWERS_KEY = 'showAnswers';
 
 // Load state from localStorage
 function loadState() {
@@ -59,6 +61,11 @@ function loadState() {
             checkbox.closest('.question-card').classList.add('read');
         }
     });
+
+    const isShowingAnswers = localStorage.getItem(SHOW_ANSWERS_KEY) === 'true';
+    if (isShowingAnswers) {
+        document.getElementById('toggle-button').click();
+    }
 }
 
 // Save state to localStorage
@@ -76,6 +83,9 @@ function saveState() {
         readCheckMap[checkbox.closest('.question-card').id] = checkbox.checked;
     });
     localStorage.setItem(READ_CHECK_MAP_KEY, JSON.stringify(readCheckMap));
+
+    const isShowingAnswers = document.getElementById('toggle-button').className.includes('hide');
+    localStorage.setItem(SHOW_ANSWERS_KEY, `${isShowingAnswers}`);
 }
 
 document.addEventListener('DOMContentLoaded', loadState);
@@ -120,7 +130,7 @@ document.getElementById('clear-button').addEventListener('click', function () {
     localStorage.setItem(CHOICE_CHECK_MAP_KEY, JSON.stringify({}));
 
     // Optionally, clear the answer highlights if they are visible
-    const isShowingAnswers = document.getElementById('toggle-button').className.includes('hide');
+    const isShowingAnswers = localStorage.getItem(SHOW_ANSWERS_KEY) === 'true';
     const allQuestionCards = document.querySelectorAll('.question-card');
     allQuestionCards.forEach(card => {
         const choices = card.querySelectorAll('.choice input[type="checkbox"]');
@@ -134,7 +144,6 @@ document.getElementById('clear-button').addEventListener('click', function () {
         });
     });
 });
-
 
 function scrollToQuestion(questionId) {
     document.getElementById(questionId).scrollIntoView({behavior: 'smooth'});
