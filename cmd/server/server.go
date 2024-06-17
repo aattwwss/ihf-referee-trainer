@@ -55,6 +55,8 @@ func main() {
 
 	// Handle the root URL ("/") by serving an HTML file (e.g., index.html)
 	http.HandleFunc("GET /", controller.Home)
+	http.HandleFunc("GET /feedback", controller.Feedback)
+	http.HandleFunc("POST /feedback", controller.SubmitFeedback)
 	http.HandleFunc("GET /random-question", controller.RandomQuestion)
 	http.HandleFunc("GET /question-list", controller.QuestionList)
 	http.HandleFunc("GET /question", controller.QuestionByID)

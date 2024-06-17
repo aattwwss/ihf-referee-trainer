@@ -2,6 +2,7 @@ package trainer
 
 import (
 	"context"
+	"fmt"
 	"html/template"
 	"io/fs"
 	"log"
@@ -81,6 +82,34 @@ func (c *Controller) Home(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error executing template: %s", err)
 	}
+}
+
+func (c *Controller) Feedback(w http.ResponseWriter, _ *http.Request) {
+	tmpl, err := template.ParseFS(c.html, "base.tmpl", "feedback/feedback.tmpl")
+	if err != nil {
+		log.Printf("Error parsing template: %s", err)
+	}
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		log.Printf("Error executing template: %s", err)
+	}
+}
+
+func (c *Controller) SubmitFeedback(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFS(c.html, "feedback/submitFeedback.tmpl")
+	if err != nil {
+		log.Printf("Error parsing template: %s", err)
+	}
+	err = r.ParseForm()
+	if err != nil {
+		log.Printf("Error parsing form: %s", err)
+	}
+	fmt.Println(r.Form)
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		log.Printf("Error executing template: %s", err)
+	}
+
 }
 
 type QuestionListPageData struct {
