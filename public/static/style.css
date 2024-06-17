@@ -67,7 +67,7 @@ header {
 .menu-items {
     display: none;
     position: fixed;
-    bottom: 130px;
+    bottom: 140px;
     right: 20px;
     background-color: #fff;
     border: 1px solid #ccc;
@@ -75,7 +75,9 @@ header {
     z-index: 1000;
     border-radius: 8px;
     overflow: hidden;
-    width: 140px; /* Match the overall width of floating-toggle */
+    width: 320px; /* Match the overall width of floating-toggle */
+    max-height: 300px;
+    overflow-y: scroll;
 }
 
 .menu-item {

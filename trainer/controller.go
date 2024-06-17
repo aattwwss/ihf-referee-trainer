@@ -37,6 +37,8 @@ type QuestionDataV2 struct {
 	RuleQuestionNumber string
 	Text               string
 	Choices            []ChoiceDateV2
+	QuestionNumber     int
+	RuleName           string
 }
 
 type ChoiceDateV2 struct {
@@ -71,6 +73,8 @@ func (c *Controller) Home(w http.ResponseWriter, r *http.Request) {
 			RuleQuestionNumber: question.RuleQuestionNumber,
 			Text:               question.Text,
 			Choices:            choices,
+			QuestionNumber:     question.QuestionNumber,
+			RuleName:           question.Rule.Name,
 		})
 	}
 	err = tmpl.Execute(w, QuestionDataList)
