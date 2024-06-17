@@ -2,7 +2,7 @@ body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
     margin: 0;
-    padding: 0 20px;  /* Only left and right padding */
+    padding: 0 20px; /* Only left and right padding */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -36,22 +36,33 @@ header {
     text-decoration: none;
 }
 
-.floating-menu {
+.floating-menu, .floating-toggle {
     position: fixed;
-    bottom: 80px;
+    bottom: 20px; /* Adjust position if necessary */
     right: 20px;
     background-color: #007bff;
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 25px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     cursor: pointer;
     z-index: 1000;
-    font-size: 0.9em;
-    width: 100px; /* Adjusted width to account for padding */
-    text-align: center;
+    font-size: 1.2em; /* Font size for icon */
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
+
+.floating-menu {
+    bottom: 80px; /* Adjusted position to be above floating-toggle */
+}
+
+.floating-toggle.hide {
+    background-color: #ff6347; /* Change color for the 'Hide Answer' state */
+}
+
 
 .menu-items {
     display: none;
@@ -76,28 +87,6 @@ header {
 
 .menu-item:hover {
     background-color: #f4f4f4;
-}
-
-.floating-toggle {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 25px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    cursor: pointer;
-    z-index: 1000;
-    font-size: 0.9em;
-    width: 140px; /* Overall width to accommodate text in one line */
-    height: 40px; /* Fixed height */
-    text-align: center; /* Ensure text is centered */
-}
-
-.floating-toggle.hide {
-    background-color: #ff6347; /* Change color for the 'Hide Answer' state */
 }
 
 .questions-container {
@@ -202,7 +191,7 @@ header {
 }
 
 .missing {
-    background-color: lightyellow;
+    background-color: yellow;
 }
 
 @media (max-width: 940px) {

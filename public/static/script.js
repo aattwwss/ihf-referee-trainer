@@ -1,6 +1,6 @@
 document.getElementById('toggle-button').addEventListener('click', function () {
     const allQuestionCards = document.querySelectorAll('.question-card');
-    const isShowingAnswers = this.textContent === 'Hide Answer';
+    const isShowingAnswers = this.className.includes('hide');
 
     allQuestionCards.forEach(card => {
         const correctAnswers = card.dataset.correct.split(',');
@@ -28,10 +28,10 @@ document.getElementById('toggle-button').addEventListener('click', function () {
     });
 
     if (isShowingAnswers) {
-        this.textContent = 'Show Answer';
+        this.innerHTML = '<i class="fas fa-eye"></i>';
         this.classList.remove('hide');
     } else {
-        this.textContent = 'Hide Answer';
+        this.innerHTML = '<i class="fas fa-eye-slash"></i>';
         this.classList.add('hide');
     }
 });
