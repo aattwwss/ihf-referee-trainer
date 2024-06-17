@@ -194,7 +194,7 @@ header {
     background-color: yellow;
 }
 
-@media (max-width: 940px) {
+@media (max-width: 760px) {
     .floating-menu, .floating-toggle {
         background-color: rgba(0, 123, 255, 0.8); /* Translucent blue */
     }
