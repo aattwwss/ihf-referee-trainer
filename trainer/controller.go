@@ -2,7 +2,6 @@ package trainer
 
 import (
 	"context"
-	"fmt"
 	"html/template"
 	"io/fs"
 	"log"
@@ -18,6 +17,7 @@ type Service interface {
 	GetRandomQuestion(ctx context.Context, rules []string) (*Question, error)
 	GetChoicesByQuestionID(ctx context.Context, questionID int) ([]Choice, error)
 	ListQuestions(ctx context.Context, rules []string, search string, lastRuleSortOrder int, lastQuestionNumber int, limit int) ([]Question, error)
+	SubmitFeedback(ctx context.Context, feedback Feedback) error
 }
 
 type Controller struct {
@@ -104,7 +104,16 @@ func (c *Controller) SubmitFeedback(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error parsing form: %s", err)
 	}
-	fmt.Println(r.Form)
+	err = c.service.SubmitFeedback(r.Context(), Feedback{
+		Name:  r.Form.Get("name"),
+		Email: r.Form.Get("email"),
+		Topic: r.Form.Get("topic"),
+		Text:  r.Form.Get("feedback"),
+	})
+	if err != nil {
+		log.Printf("Error submitting feedback: %s", err)
+	}
+
 	err = tmpl.Execute(w, nil)
 	if err != nil {
 		log.Printf("Error executing template: %s", err)

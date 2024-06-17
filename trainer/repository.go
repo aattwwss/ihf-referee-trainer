@@ -318,3 +318,20 @@ func (r *QuestionRepository) FindChoicesByQuestionIds(ctx context.Context, quest
 	}
 	return choiceMap, nil
 }
+
+func (r *QuestionRepository) InsertFeedback(ctx context.Context, feedback Feedback) error {
+	feedbackEntity := FeedbackEntity{
+		Name:           feedback.Name,
+		Email:          feedback.Email,
+		Topic:          feedback.Topic,
+		Text:           feedback.Text,
+		IsAcknowledged: feedback.IsAcknowledged,
+		IsCompleted:    feedback.IsCompleted,
+	}
+	query := fmt.Sprintf("INSERT INTO feedback (email, name, topic, text, is_acknowledged, is_completed) VALUES ($1, $2, $3, $4,$5, $6)")
+	_, err := r.db.Exec(ctx, query, feedbackEntity.Email, feedbackEntity.Name, feedbackEntity.Topic, feedbackEntity.Text, feedbackEntity.IsAcknowledged, feedbackEntity.IsCompleted)
+	if err != nil {
+		return err
+	}
+	return nil
+}
