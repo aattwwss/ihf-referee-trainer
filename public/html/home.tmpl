@@ -1,31 +1,35 @@
 {{block "content" .}}
-    <label>
-        <input class="search-bar" type="search"
-               name="search" placeholder="Begin Typing To Search..."
-               hx-get="/question-list"
-               hx-trigger="load, input changed delay:500ms, search"
-               hx-target="#question-list">
-    </label>
-    <div class="table-container">
-        <table class="questions-table">
-            <colgroup>
-                <col class="index-col"/>
-                <col class="question-col"/>
-                <col class="rule-col"/>
-                <col class="question-number-col"/>
-                <col class="view-question-col"/>
-            </colgroup>
-            <thead>
-            <tr>
-                <th></th>
-                <th>Question</th>
-                <th>Rule Name</th>
-                <th>Rule Question Number</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody id="question-list">
-            </tbody>
-        </table>
+    <div class="questions-container">
+        {{range .}}
+            <div class="question-card" data-correct="{{.CorrectChoices}}" id="question-{{.RuleQuestionNumber}}">
+                <div class="question-header">
+                    <div class="question-number">Question {{.ID}}:</div>
+                    <label class="read-toggle">
+                        <input type="checkbox" class="read-checkbox">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="question-text">{{.RuleQuestionNumber}}) {{.Text}}</div>
+                <div class="choices">
+                    {{range .Choices}}
+                        <label class="choice">
+                            <input type="checkbox" name="choice{{.ID}}" value="{{.Option}}"> {{.Text}}
+                        </label>
+                    {{end}}
+                </div>
+            </div>
+        {{end}}
     </div>
+    <div class="floating-menu" id="menu-button" tabindex="0" title="Jump to rule"><i class="fas fa-bars"></i></div>
+    <div class="menu-items" id="menu-items">
+        {{- range .}}
+            {{- if eq .QuestionNumber 1}}
+                <div class="menu-item"
+                     onclick="scrollToQuestion('question-{{.RuleQuestionNumber}}')">{{.RuleName}}</div>
+            {{- end}}
+        {{- end -}}
+    </div>
+    <button class="floating-clear" id="clear-button" title="Clear All Options"><i class="fas fa-times"></i></button>
+    <button class="floating-toggle" id="toggle-button" title="Show/Hide answers"><i class="fas fa-eye"></i></button>
+    <script src="static/home.js" defer></script>
 {{end}}

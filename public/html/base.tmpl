@@ -17,26 +17,24 @@
     <meta name="msapplication-config" content="static/browserconfig.xml">
     <meta name="theme-color" content="#ffffff">
 
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
-    <script src="static/script.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="static/htmx.min.js" defer></script>
 </head>
 
 <body>
-<header class="site-header">
-    <div class="site-header-container">
-        <a href="/" class="logo">
-            <img src="static/favicon.ico" alt="IHF Referee Trainer">
-        </a>
-        <a href="/" class="site-name">IHF Referee Trainer</a>
-        <nav>
-            <ul class="navigation">
-                <li><a href="/random-question">Random Question</a></li>
+<header>
+    <div class="header-container">
+        <img src="static/favicon.ico" alt="IHF Referee Trainer">
+        <a href="/" class="header-title">IHF Referee Trainer</a>
+        <nav class="header-nav">
+            <ul class="nav-links">
+                <li><a href="/" class="nav-link">Home</a></li>
+                <li><a href="/feedback" class="nav-link">Feedback</a></li>
+{{/*                <li><a href="https://github.com/aattwwss/ihf-referee-rules" class="nav-link">GitHub</a></li>*/}}
             </ul>
         </nav>
     </div>
 </header>
-{{/*<div class="card-container"><h1>IHF Referee Rules Trainer</h1></div>*/}}
 {{template "content" .}}
 </body>
 

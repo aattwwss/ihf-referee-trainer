@@ -27,6 +27,16 @@ type ReferenceEntity struct {
 	Text       string
 }
 
+type FeedbackEntity struct {
+	ID             int
+	Name           string
+	Email          string
+	Topic          string
+	Text           string
+	IsAcknowledged bool
+	IsCompleted    bool
+}
+
 type Question struct {
 	ID                 int
 	Text               string
@@ -54,4 +64,14 @@ type Rule struct {
 type Reference struct {
 	ID   int
 	Text string
+}
+
+type Feedback struct {
+	ID             int
+	Name           string
+	Email          string
+	Topic          string
+	Text           string
+	IsAcknowledged bool
+	IsCompleted    bool
 }

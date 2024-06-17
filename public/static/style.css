@@ -1,251 +1,286 @@
-.site-header {
-    background-color: #f2f2f2;
-    padding: 10px 0;
-    margin-bottom: 10px;
-    color: #333;
-}
-
-.site-header-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    /*   max-width: 1200px; */
-    margin: 0 auto;
-    /*padding: 0 10px;*/
-}
-
-.site-header-container a {
-    color: #333;
-    text-decoration: none;
-}
-
-.logo {
-    width: 50px;
-    height: auto;
-    margin: 0 10px;
-}
-
-.site-name {
-    font-size: 24px;
-    font-weight: bold;
-    margin-right: auto; /* Aligns the site name to the left */
-}
-
-.navigation {
-    list-style-type: none;
-    margin: 0 10px 0 0;
-    padding: 0;
-    display: flex;
-}
-
-.navigation li {
-    margin-left: 20px; /* Add space between navigation items */
-}
-
-.navigation li:first-child {
-    margin-left: auto; /* Aligns the first navigation item to the right */
-}
-
-.navigation a {
-    color: #333;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-/* Apply the provided image as the textured background to the entire site */
 body {
-    font-family: "Roboto", sans-serif;
-    color: #000000; /* Set text color to white or a contrasting color */
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0 20px; /* Only left and right padding */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+header {
+    width: 100%;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 10px 20px;
+    display: flex;
+    justify-content: flex-start; /* Align items to the left */
+    align-items: center;
+}
+
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+
+.header-icon {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+}
+
+.header-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: black;
+    text-decoration: none;
+}
+
+.header-nav {
+    margin-left: auto;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 20px; /* Space between links */
     margin: 0;
     padding: 0;
-    /*background-image: url("/static/wallpaper.png");*/
-    background: #ffffff;
-    /*background-repeat: repeat;*/
 }
 
-.card-container {
-    max-width: 900px;
-    margin: 20px auto;
-    padding: 40px;
-    border: 2px solid #ddd;
-    border-radius: 10px;
-    background-color: #f5f5f5;
+.nav-link {
+    font-size: 1em;
+    color: #007bff;
+    text-decoration: none;
+}
+
+.nav-link:hover {
+    text-decoration: underline;
+}
+
+.floating-menu, .floating-toggle, .floating-clear {
+    position: fixed;
+    bottom: 20px; /* Adjust position if necessary */
+    right: 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    z-index: 1000;
+    font-size: 1.2em; /* Font size for icon */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.floating-menu {
+    bottom: 140px; /* Adjusted position to be above floating-toggle */
+}
+
+.floating-clear {
+    bottom: 80px; /* Adjusted position to be above floating-toggle */
+}
+
+.floating-toggle.hide {
+    background-color: #ff6347; /* Change color for the 'Hide Answer' state */
+}
+
+.menu-items {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 90px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 320px; /* Match the overall width of floating-toggle */
+    max-height: 300px;
+    overflow-y: scroll;
+}
+
+.menu-item {
+    padding: 10px 20px;
+    cursor: pointer;
+    background-color: #fff;
+    color: #333;
+}
+
+.menu-item:hover {
+    background-color: #f4f4f4;
+}
+
+.questions-container {
+    max-width: 600px;
+    width: 100%;
+    margin-top: 20px; /* Ensure there's no extra space caused by the toggle */
 }
 
 .question-card {
-    background-color: #ebe8e8;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    border: 2px solid #ddd;
-    border-radius: 5px;
+    margin-bottom: 20px;
+    transition: background-color 0.3s;
 }
 
-.choice-label {
-    background-color: #fff;
-    margin-top: 10px;
+.question-card.read {
+    background-color: #e0e0e0; /* Light gray to reduce focus */
+    color: #888; /* Muted text color */
+}
+
+.question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 10px;
-    padding: 10px;
-    border: 2px solid #ddd;
-    border-radius: 5px;
+}
+
+.question-number {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.question-text {
+    font-size: 1.1em;
+    margin-bottom: 20px;
+}
+
+.choices {
+    display: flex;
+    flex-direction: column;
+}
+
+.choice {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: flex-start; /* Ensure alignment with checkbox */
+}
+
+.choice input[type="checkbox"] {
+    margin-right: 10px;
+    margin-top: 2px; /* Adjust the checkbox alignment */
+}
+
+.read-toggle {
     display: flex;
     align-items: center;
+}
+
+.read-toggle .read-checkbox {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.read-toggle .slider {
+    position: relative;
+    width: 34px;
+    height: 20px;
+    background-color: #ccc;
+    border-radius: 34px;
+    transition: 0.4s;
     cursor: pointer;
 }
 
-.choice-label:hover {
-    background-color: #f0f0f0; /* Change the button color on hover */
-    cursor: pointer;
+.read-toggle .slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.4s;
 }
 
-.choice-label input[type="checkbox"] {
-    display: none;
+.read-toggle .read-checkbox:checked + .slider {
+    background-color: #007bff;
 }
 
-.choice-label .choice-text {
-    margin-left: 10px;
+.read-toggle .read-checkbox:checked + .slider:before {
+    transform: translateX(14px);
 }
 
-.choice-label input[type="checkbox"]:checked + .choice-text {
-    font-weight: bold;
-    color: #333;
+.correct {
+    background-color: lightgreen;
 }
 
-.correct-answer, .correct-answer:hover {
-    background-color: #caffbf; /* Light green for selected and correct answer */
-    cursor: default;
+.wrong {
+    background-color: lightcoral;
 }
 
-.wrong-answer, .wrong-answer:hover {
-    background-color: #ffbcbf; /* Light red for selected and wrong answer */
-    cursor: default;
+.missing {
+    background-color: yellow;
 }
 
-.missing-answer, .missing-answer:hover {
-    background-color: #ffd699; /* Light orange for not selected but supposed to be correct answer */
-    cursor: default;
+@media (max-width: 760px) {
+    .floating-menu, .floating-toggle, .floating-clear {
+        background-color: rgba(0, 123, 255, 0.8); /* Translucent blue */
+    }
+
+    .floating-toggle.hide {
+        background-color: rgba(255, 99, 71, 0.8); /* Translucent red */
+    }
 }
 
-.blank-answer, .blank-answer:hover {
-    background-color: #fff; /* White for not selected and not supposed to be correct answer */
-    cursor: default;
-}
-
-
-/* Style for the submit button */
-#quiz-form button[type="submit"] {
-    padding: 10px 20px; /* Add padding here (top and bottom 10px, left and right 20px) */
-    background-color: #0074d9; /* Change the button color here */
-    color: #fff;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    font-weight: bold;
-    /*   margin-top: 10px; */
-}
-
-#quiz-form button[type="submit"]:hover {
-    background-color: #0056b3; /* Change the button color on hover */
-}
-
-/* Style for the search input bar */
-.search-bar {
-    width: 50%;
-    padding: 10px;
-    box-sizing: border-box; /* Include padding in width calculation */
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    margin: 10px auto;
-    display: block;
-}
-
-.table-container {
-    max-width: 50%;
-    width: 70em;
-    margin: 10px auto;
-    display: block;
-}
-
-/* Style for the table */
-.questions-table {
-    border-collapse: collapse;
-    /*width: 100%;*/
-    table-layout: auto;
-    counter-reset: serial-number; /* Set the serial number counter to 0 */
-}
-
-.questions-table td:first-child:before {
-    counter-increment: serial-number; /* Increment the serial number counter */
-    content: counter(serial-number); /* Display the counter */
-}
-
-.questions-table tr:last-child td:first-child:before {
-    counter-increment: none; /* Don't increment the counter for the last row */
-    content: none; /* Hide the counter for the last row */
-}
-
-/* Style for table header cells */
-.questions-table th {
-    background-color: #f2f2f2;
-    border: 1px solid #dddddd;
-    padding: 10px; /* Padding on each side */
-    text-align: left;
-}
-
-/* Style for table data cells */
-.questions-table td {
-    border: 1px solid #dddddd;
-    padding: 10px; /* Padding on each side */
-    text-align: left;
-}
-
-/* Style for alternate rows (optional) */
-.questions-table tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-/* Hover effect (optional) */
-.questions-table tr:hover {
-    background-color: #e2e2e2;
-}
-
-.index-col {
-    width: 1%;
-}
-
-.question-col {
-    width: 80%;
-}
-
-.rule-col {
-    width: 15%;
-}
-
-.question-number-col {
-    width: 1%;
-}
-
-.view-question-col {
-    width: 1%;
-}
-
-.view-question-link {
-    text-decoration: none;
-    color: #0074d9;
-}
-
-#load-more-tr td {
-    padding: 0;
-    text-align: center;
-}
-
-.cell-button {
+/*Feedback Page*/
+.feedback-form-container {
+    max-width: 600px;
     width: 100%;
-    height: 100%;
-    background-color: #f2f2f2;
-    border: 1px solid #dddddd;
-    padding: 10px; /* Padding on each side */
-    cursor: pointer;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
 }
 
-.cell-button:hover {
-    background-color: #e2e2e2;
+.feedback-form-group {
+    margin-bottom: 15px;
+}
+
+.feedback-form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.feedback-form-group input,
+.feedback-form-group select,
+.feedback-form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin: 0;
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+.feedback-form-group textarea {
+    resize: none; /* Prevent resizing of the textarea */
+}
+
+button[type="submit"] {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+button[type="submit"]:hover {
+    background-color: #0056b3;
 }

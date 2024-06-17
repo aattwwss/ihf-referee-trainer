@@ -1,10 +1,10 @@
-{{range .Questions}}
+{{range .questions}}
     <tr>
         <td></td>
-        <td>{{.Text}}</td>
-        <td>{{.RuleName}}</td>
-        <td>{{.RuleQuestionNumber}}</td>
-        <td><a class="view-question-link" href="/question?id={{.ID}}"> View</a></td>
+        <td>{{.text}}</td>
+        <td>{{.rulename}}</td>
+        <td>{{.rulequestionnumber}}</td>
+        <td><a class="view-question-link" href="/question?id={{.id}}"> view</a></td>
     </tr>
 {{end}}
     <tr id="load-more-tr">

@@ -1,0 +1,28 @@
+{{block "content" .}}
+    <div class="feedback-form-container">
+        <form id="feedback-form" hx-post="/feedback">
+            <h2>Feedback Form</h2>
+            <div class="feedback-form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="feedback-form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="feedback-form-group">
+                <label for="topic">Topic:</label>
+                <select id="topic" name="topic" required>
+                    <option value="questions">Questions Related</option>
+                    <option value="test">Test Related</option>
+                    <option value="others">Others</option>
+                </select>
+            </div>
+            <div class="feedback-form-group">
+                <label for="feedback">Feedback:</label>
+                <textarea id="feedback" name="feedback" rows="5" required></textarea>
+            </div>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+{{end}}

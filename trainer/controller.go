@@ -12,10 +12,12 @@ import (
 )
 
 type Service interface {
+	GetAllQuestions(ctx context.Context) ([]Question, error)
 	GetQuestionByID(ctx context.Context, id int) (*Question, error)
 	GetRandomQuestion(ctx context.Context, rules []string) (*Question, error)
 	GetChoicesByQuestionID(ctx context.Context, questionID int) ([]Choice, error)
 	ListQuestions(ctx context.Context, rules []string, search string, lastRuleSortOrder int, lastQuestionNumber int, limit int) ([]Question, error)
+	SubmitFeedback(ctx context.Context, feedback Feedback) error
 }
 
 type Controller struct {
@@ -30,8 +32,60 @@ func NewController(service Service, html fs.FS) *Controller {
 	}
 }
 
+type QuestionDataV2 struct {
+	ID                 int
+	CorrectChoices     string
+	RuleQuestionNumber string
+	Text               string
+	Choices            []ChoiceDateV2
+	QuestionNumber     int
+	RuleName           string
+}
+
+type ChoiceDateV2 struct {
+	ID     int
+	Option string
+	Text   string
+}
+
 func (c *Controller) Home(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFS(c.html, "base.tmpl", "home.tmpl")
+	if err != nil {
+		log.Printf("Error parsing template: %s", err)
+	}
+	allQuestions, err := c.service.GetAllQuestions(r.Context())
+	var QuestionDataList []QuestionDataV2
+	for i, question := range allQuestions {
+		var choices []ChoiceDateV2
+		var correctChoices []string
+		for _, choice := range question.Choices {
+			if choice.IsAnswer {
+				correctChoices = append(correctChoices, choice.Option)
+			}
+			choices = append(choices, ChoiceDateV2{
+				ID:     choice.ID,
+				Option: choice.Option,
+				Text:   choice.Text,
+			})
+		}
+		QuestionDataList = append(QuestionDataList, QuestionDataV2{
+			ID:                 i + 1,
+			CorrectChoices:     strings.Join(correctChoices, ","),
+			RuleQuestionNumber: question.RuleQuestionNumber,
+			Text:               question.Text,
+			Choices:            choices,
+			QuestionNumber:     question.QuestionNumber,
+			RuleName:           question.Rule.Name,
+		})
+	}
+	err = tmpl.Execute(w, QuestionDataList)
+	if err != nil {
+		log.Printf("Error executing template: %s", err)
+	}
+}
+
+func (c *Controller) Feedback(w http.ResponseWriter, _ *http.Request) {
+	tmpl, err := template.ParseFS(c.html, "base.tmpl", "feedback/feedback.tmpl")
 	if err != nil {
 		log.Printf("Error parsing template: %s", err)
 	}
@@ -39,6 +93,32 @@ func (c *Controller) Home(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error executing template: %s", err)
 	}
+}
+
+func (c *Controller) SubmitFeedback(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFS(c.html, "feedback/submitFeedback.tmpl")
+	if err != nil {
+		log.Printf("Error parsing template: %s", err)
+	}
+	err = r.ParseForm()
+	if err != nil {
+		log.Printf("Error parsing form: %s", err)
+	}
+	err = c.service.SubmitFeedback(r.Context(), Feedback{
+		Name:  r.Form.Get("name"),
+		Email: r.Form.Get("email"),
+		Topic: r.Form.Get("topic"),
+		Text:  r.Form.Get("feedback"),
+	})
+	if err != nil {
+		log.Printf("Error submitting feedback: %s", err)
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		log.Printf("Error executing template: %s", err)
+	}
+
 }
 
 type QuestionListPageData struct {
