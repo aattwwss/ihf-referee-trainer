@@ -36,7 +36,7 @@ header {
     text-decoration: none;
 }
 
-.floating-menu, .floating-toggle {
+.floating-menu, .floating-toggle, .floating-clear {
     position: fixed;
     bottom: 20px; /* Adjust position if necessary */
     right: 20px;
@@ -56,6 +56,10 @@ header {
 }
 
 .floating-menu {
+    bottom: 140px; /* Adjusted position to be above floating-toggle */
+}
+
+.floating-clear {
     bottom: 80px; /* Adjusted position to be above floating-toggle */
 }
 
@@ -63,12 +67,11 @@ header {
     background-color: #ff6347; /* Change color for the 'Hide Answer' state */
 }
 
-
 .menu-items {
     display: none;
     position: fixed;
-    bottom: 140px;
-    right: 20px;
+    bottom: 20px;
+    right: 90px;
     background-color: #fff;
     border: 1px solid #ccc;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -107,7 +110,8 @@ header {
 }
 
 .question-card.read {
-    background-color: #e0f7fa;
+    background-color: #e0e0e0; /* Light gray to reduce focus */
+    color: #888; /* Muted text color */
 }
 
 .question-header {

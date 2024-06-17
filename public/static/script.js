@@ -85,7 +85,7 @@ document.querySelectorAll('.choice input[type="checkbox"]').forEach(checkbox => 
 });
 
 document.querySelectorAll('.read-checkbox').forEach(checkbox => {
-    checkbox.addEventListener('change', function() {
+    checkbox.addEventListener('change', function () {
         const card = this.closest('.question-card');
         if (this.checked) {
             card.classList.add('read');
@@ -104,7 +104,7 @@ document.getElementById('menu-button').addEventListener('click', function () {
     }
 });
 
-document.addEventListener('click', function(event) {
+document.addEventListener('click', function (event) {
     const menuItems = document.getElementById('menu-items');
     const menuButton = document.getElementById('menu-button');
     if (menuItems.style.display === 'block' && !menuButton.contains(event.target) && !menuItems.contains(event.target)) {
@@ -112,7 +112,30 @@ document.addEventListener('click', function(event) {
     }
 });
 
+document.getElementById('clear-button').addEventListener('click', function () {
+    const choiceCheckboxes = document.querySelectorAll('.choice input[type="checkbox"]');
+    choiceCheckboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    localStorage.setItem(CHOICE_CHECK_MAP_KEY, JSON.stringify({}));
+
+    // Optionally, clear the answer highlights if they are visible
+    const allQuestionCards = document.querySelectorAll('.question-card');
+    allQuestionCards.forEach(card => {
+        const choices = card.querySelectorAll('.choice input[type="checkbox"]');
+        const correctAnswers = card.dataset.correct.split(',');
+        choices.forEach(choice => {
+            const parentLabel = choice.parentElement;
+            parentLabel.classList.remove('missing', 'wrong', 'correct');
+            if (correctAnswers.includes(choice.value)) {
+                parentLabel.classList.add('missing');
+            }
+        });
+    });
+});
+
+
 function scrollToQuestion(questionId) {
-    document.getElementById(questionId).scrollIntoView({ behavior: 'smooth' });
+    document.getElementById(questionId).scrollIntoView({behavior: 'smooth'});
     document.getElementById('menu-items').style.display = 'none';
 }
