@@ -2,6 +2,7 @@ package trainer
 
 import (
 	"context"
+	"fmt"
 	"html/template"
 	"io/fs"
 	"log"
@@ -9,10 +10,12 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Service interface {
 	GetAllQuestions(ctx context.Context) ([]Question, error)
+	GetAllRules(ctx context.Context) ([]Rule, error)
 	GetQuestionByID(ctx context.Context, id int) (*Question, error)
 	GetRandomQuestion(ctx context.Context, rules []string) (*Question, error)
 	GetChoicesByQuestionID(ctx context.Context, questionID int) ([]Choice, error)
@@ -105,7 +108,7 @@ func (c *Controller) SubmitFeedback(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error parsing form: %s", err)
 	}
 	err = c.service.SubmitFeedback(r.Context(), Feedback{
-		Name:  r.Form.Get("name"),
+		Name:  r.Form.Get("Name"),
 		Email: r.Form.Get("email"),
 		Topic: r.Form.Get("topic"),
 		Text:  r.Form.Get("feedback"),
@@ -119,6 +122,39 @@ func (c *Controller) SubmitFeedback(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error executing template: %s", err)
 	}
 
+}
+
+type QuizConfigData struct {
+	Seed        string
+	RulesFilter []QuizConfigRule
+}
+
+type QuizConfigRule struct {
+	ID   string
+	Name string
+}
+
+func (c *Controller) QuizConfig(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFS(c.html, "base.tmpl", "quiz/quizConfig.tmpl")
+	if err != nil {
+		log.Printf("Error parsing template: %s", err)
+	}
+	rules, err := c.service.GetAllRules(r.Context())
+	var rulesFilter []QuizConfigRule
+	for _, rule := range rules {
+		rulesFilter = append(rulesFilter, QuizConfigRule{
+			ID:   rule.ID,
+			Name: rule.Name,
+		})
+	}
+	quizConfigData := QuizConfigData{
+		Seed:        fmt.Sprintf("%d", time.Now().UnixMilli()),
+		RulesFilter: rulesFilter,
+	}
+	err = tmpl.Execute(w, quizConfigData)
+	if err != nil {
+		log.Printf("Error executing template: %s", err)
+	}
 }
 
 type QuestionListPageData struct {

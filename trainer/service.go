@@ -4,6 +4,7 @@ import "context"
 
 type Repository interface {
 	GetAllQuestions(ctx context.Context) ([]Question, error)
+	GetAllRules(ctx context.Context) ([]Rule, error)
 	GetQuestionByID(ctx context.Context, id int) (*Question, error)
 	GetRandomQuestion(ctx context.Context, rules []string) (*Question, error)
 	GetChoicesByQuestionID(ctx context.Context, questionID int) ([]Choice, error)
@@ -21,6 +22,10 @@ func NewService(repository Repository) *QuestionService {
 
 func (s *QuestionService) GetAllQuestions(ctx context.Context) ([]Question, error) {
 	return s.repository.GetAllQuestions(ctx)
+}
+
+func (s *QuestionService) GetAllRules(ctx context.Context) ([]Rule, error) {
+	return s.repository.GetAllRules(ctx)
 }
 
 func (s *QuestionService) GetQuestionByID(ctx context.Context, id int) (*Question, error) {

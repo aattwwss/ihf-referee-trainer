@@ -235,6 +235,28 @@ func (r *QuestionRepository) GetAllDistinctRuleIDs(ctx context.Context) ([]strin
 	return rules, nil
 }
 
+func (r *QuestionRepository) GetAllRules(ctx context.Context) ([]Rule, error) {
+	query := fmt.Sprintf("SELECT * FROM rule order by sort_order")
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	ruleEntity, err := pgx.CollectRows(rows, pgx.RowToStructByPos[RuleEntity])
+	if err != nil {
+		return nil, err
+	}
+
+	var rules []Rule
+	for _, ruleEntity := range ruleEntity {
+		rules = append(rules, Rule{
+			ID:        ruleEntity.ID,
+			Name:      ruleEntity.Name,
+			SortOrder: ruleEntity.SortOrder,
+		})
+	}
+	return rules, nil
+}
+
 // ListQuestions returns a list of questions
 // supports pagination using the rule sort order and question number of the last question to offset
 func (r *QuestionRepository) ListQuestions(ctx context.Context, ruleIDs []string, search string, lastRuleSortOrder int, lastQuestionNumber int, limit int) ([]Question, error) {
@@ -328,7 +350,7 @@ func (r *QuestionRepository) InsertFeedback(ctx context.Context, feedback Feedba
 		IsAcknowledged: feedback.IsAcknowledged,
 		IsCompleted:    feedback.IsCompleted,
 	}
-	query := fmt.Sprintf("INSERT INTO feedback (email, name, topic, text, is_acknowledged, is_completed) VALUES ($1, $2, $3, $4,$5, $6)")
+	query := fmt.Sprintf("INSERT INTO feedback (email, Name, topic, text, is_acknowledged, is_completed) VALUES ($1, $2, $3, $4,$5, $6)")
 	_, err := r.db.Exec(ctx, query, feedbackEntity.Email, feedbackEntity.Name, feedbackEntity.Topic, feedbackEntity.Text, feedbackEntity.IsAcknowledged, feedbackEntity.IsCompleted)
 	if err != nil {
 		return err
