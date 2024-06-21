@@ -1,0 +1,34 @@
+{{block "content" .}}
+    <div class="quiz-form-container">
+        <h2>Quiz Configuration</h2>
+        <form id="quiz-config-form">
+            <input type="hidden" id="seed" name="seed" value="{{.Seed}}">
+            <div class="quiz-form-group">
+                <label for="num-questions">Number of Questions:</label>
+                <input type="number" id="num-questions" name="num-questions" value="20" required>
+            </div>
+            <div class="quiz-form-group">
+                <label for="duration">Duration (minutes):</label>
+                <input type="number" id="duration" name="duration" value="60" required>
+            </div>
+            <div class="quiz-form-group">
+                <label for="rules">Rules Topics Tested:</label>
+                <select id="rules" name="rules" multiple required>
+                    {{ range .RulesFilter }}
+                        <option selected value="{{.ID}}">{{ .ID }} - {{ .Name }}</option>
+                    {{ end }}
+                </select>
+            </div>
+            <div class="quiz-form-group">
+                <label for="negative-marking" title="minus a point for a wrongly selected answer">Negative
+                    Marking:</label>
+                <select id="negative-marking" name="negative-marking" required>
+                    <option value="yes">Yes</option>
+                    <option value="no" selected>No</option>
+                </select>
+            </div>
+            <button type="submit">Start Quiz</button>
+        </form>
+    </div>
+        <script src="/static/quizConfig.js"></script>
+{{ end }}
