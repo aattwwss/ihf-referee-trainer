@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"net/url"
 	"slices"
 	"strconv"
 	"strings"
@@ -155,6 +156,20 @@ func (c *Controller) QuizConfig(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error executing template: %s", err)
 	}
+}
+
+func (c *Controller) DoQuiz(w http.ResponseWriter, r *http.Request) {
+	queries, _ := url.ParseQuery(r.URL.RawQuery)
+
+	log.Printf(queries.Get("seed"))
+	for _, v := range queries["rules"] {
+		log.Printf(v)
+	}
+	log.Printf(queries.Get("negative-marking"))
+	log.Printf(queries.Get("duration"))
+	log.Printf(queries.Get("num-questions"))
+
+	w.Write([]byte("OK"))
 }
 
 type QuestionListPageData struct {
@@ -335,6 +350,19 @@ func queryParamInt(r *http.Request, query string, defaultValue int) int {
 	i, err := strconv.Atoi(s)
 	if err != nil {
 		log.Print("Error parsing int: ", err)
+		return defaultValue
+	}
+	return i
+}
+
+func queryParamBool(r *http.Request, query string, defaultValue bool) bool {
+	s := r.URL.Query().Get(query)
+	if s == "" {
+		return false
+	}
+	i, err := strconv.ParseBool(s)
+	if err != nil {
+		log.Print("Error parsing bool: ", err)
 		return defaultValue
 	}
 	return i
