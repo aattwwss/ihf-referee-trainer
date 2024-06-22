@@ -6,6 +6,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"strings"
+	"time"
 )
 
 type QuestionRepository struct {
@@ -356,4 +357,39 @@ func (r *QuestionRepository) InsertFeedback(ctx context.Context, feedback Feedba
 		return err
 	}
 	return nil
+}
+
+func (r *QuestionRepository) InsertQuizConfig(ctx context.Context, quizConfig QuizConfig) error {
+	tx, err := r.db.BeginTx(ctx, pgx.TxOptions{})
+	entity := QuizConfigEntity{
+		Key:                getKey(),
+		NumQuestions:       quizConfig.NumQuestions,
+		DurationInMinutes:  quizConfig.DurationInMinutes,
+		HasNegativeMarking: quizConfig.HasNegativeMarking,
+	}
+	query := fmt.Sprintf("INSERT INTO quiz_config (key, num_questions, duration_in_minutes, has_negative_marking) VALUES ($1, $2, $3, $4) RETURNING id")
+	err = tx.QueryRow(ctx, query, entity.Key, entity.NumQuestions, entity.DurationInMinutes, entity.HasNegativeMarking).Scan(&entity.ID)
+	if err != nil {
+		return err
+	}
+	_, err = tx.CopyFrom(
+		ctx,
+		pgx.Identifier{"quiz_config_rules"},
+		[]string{"quiz_config_id", "rule_id"},
+		pgx.CopyFromSlice(len(quizConfig.RuleIDs), func(i int) ([]interface{}, error) {
+			return []interface{}{entity.ID, quizConfig.RuleIDs[i]}, nil
+		}),
+	)
+	if err != nil {
+		return err
+	}
+	err = tx.Commit(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func getKey() string {
+	return fmt.Sprintf("%d", time.Now().UnixMilli())
 }

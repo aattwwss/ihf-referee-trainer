@@ -37,6 +37,20 @@ type FeedbackEntity struct {
 	IsCompleted    bool
 }
 
+type QuizConfigEntity struct {
+	ID                 int
+	Key                string
+	NumQuestions       int
+	DurationInMinutes  int
+	HasNegativeMarking bool
+}
+
+type QuizConfigRuleEntity struct {
+	ID           int
+	QuizConfigID int
+	RuleID       int
+}
+
 type Question struct {
 	ID                 int
 	Text               string
@@ -74,4 +88,13 @@ type Feedback struct {
 	Text           string
 	IsAcknowledged bool
 	IsCompleted    bool
+}
+
+type QuizConfig struct {
+	ID                 int
+	Key                string
+	NumQuestions       int
+	DurationInMinutes  int
+	HasNegativeMarking bool
+	RuleIDs            []int
 }
