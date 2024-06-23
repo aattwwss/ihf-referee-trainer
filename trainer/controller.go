@@ -22,6 +22,8 @@ type Service interface {
 	ListQuestions(ctx context.Context, rules []string, search string, lastRuleSortOrder int, lastQuestionNumber int, limit int) ([]Question, error)
 	SubmitFeedback(ctx context.Context, feedback Feedback) error
 	SubmitQuizConfig(ctx context.Context, quizConfig QuizConfig) (string, error)
+	GetQuestionsByQuizConfigKey(ctx context.Context, key string) ([]Question, error)
+	EvaluateQuizAnswer(ctx context.Context, quizConfigKey string, choiceIDs []int) ([]Question, error)
 }
 
 type Controller struct {
@@ -41,15 +43,17 @@ type QuestionDataV2 struct {
 	CorrectChoices     string
 	RuleQuestionNumber string
 	Text               string
-	Choices            []ChoiceDateV2
+	Choices            []ChoiceDataV2
 	QuestionNumber     int
 	RuleName           string
 }
 
-type ChoiceDateV2 struct {
-	ID     int
-	Option string
-	Text   string
+type ChoiceDataV2 struct {
+	ID         int
+	Option     string
+	Text       string
+	Result     string
+	IsSelected bool
 }
 
 func (c *Controller) Home(w http.ResponseWriter, r *http.Request) {
@@ -60,13 +64,13 @@ func (c *Controller) Home(w http.ResponseWriter, r *http.Request) {
 	allQuestions, err := c.service.GetAllQuestions(r.Context())
 	var QuestionDataList []QuestionDataV2
 	for i, question := range allQuestions {
-		var choices []ChoiceDateV2
+		var choices []ChoiceDataV2
 		var correctChoices []string
 		for _, choice := range question.Choices {
 			if choice.IsAnswer {
 				correctChoices = append(correctChoices, choice.Option)
 			}
-			choices = append(choices, ChoiceDateV2{
+			choices = append(choices, ChoiceDataV2{
 				ID:     choice.ID,
 				Option: choice.Option,
 				Text:   choice.Text,
@@ -183,7 +187,96 @@ func (c *Controller) SubmitQuizConfig(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) DoQuiz(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(r.PathValue("key")))
+	key := r.PathValue("key")
+	if key == "" {
+		http.Redirect(w, r, "/quiz/config", http.StatusFound)
+	}
+	allQuestions, err := c.service.GetQuestionsByQuizConfigKey(r.Context(), key)
+	if err != nil {
+		log.Printf("Error getting quiz questions: %s", err)
+	}
+
+	tmpl, err := template.ParseFS(c.html, "base.tmpl", "quiz/quiz.tmpl")
+	if err != nil {
+		log.Printf("Error parsing template: %s", err)
+	}
+	var QuestionDataList []QuestionDataV2
+	for i, question := range allQuestions {
+		var choices []ChoiceDataV2
+		for _, choice := range question.Choices {
+			choices = append(choices, ChoiceDataV2{
+				ID:     choice.ID,
+				Option: choice.Option,
+				Text:   choice.Text,
+			})
+		}
+		QuestionDataList = append(QuestionDataList, QuestionDataV2{
+			ID:                 i + 1,
+			RuleQuestionNumber: question.RuleQuestionNumber,
+			Text:               question.Text,
+			Choices:            choices,
+			QuestionNumber:     question.QuestionNumber,
+			RuleName:           question.Rule.Name,
+		})
+	}
+	err = tmpl.Execute(w, QuestionDataList)
+	if err != nil {
+		log.Printf("Error executing template: %s", err)
+	}
+}
+
+func (c *Controller) SubmitQuiz(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFS(c.html, "quiz/result.tmpl")
+	if err != nil {
+		log.Printf("Error parsing template: %s", err)
+	}
+	err = r.ParseForm()
+	if err != nil {
+		log.Printf("Error parsing form: %s", err)
+	}
+	var choiceIDs []int
+	for k, _ := range r.Form {
+		suffix := strings.TrimPrefix(k, "choice")
+		suffix = strings.TrimSpace(suffix)
+		choiceID, err := strconv.Atoi(suffix)
+		if err != nil {
+			log.Printf("Error parsing choice ID: %s", err)
+		}
+		choiceIDs = append(choiceIDs, choiceID)
+	}
+	questions, err := c.service.EvaluateQuizAnswer(r.Context(), r.PathValue("key"), choiceIDs)
+	if err != nil {
+		log.Printf("Error evaluating quiz answer: %s", err)
+	}
+	var QuestionDataList []QuestionDataV2
+	for i, question := range questions {
+		var choices []ChoiceDataV2
+		for _, choice := range question.Choices {
+			var result string
+			if choice.Result != nil {
+				result = string(*choice.Result)
+			}
+			choices = append(choices, ChoiceDataV2{
+				ID:         choice.ID,
+				Option:     choice.Option,
+				Text:       choice.Text,
+				Result:     result,
+				IsSelected: slices.Contains(choiceIDs, choice.ID),
+			})
+		}
+		QuestionDataList = append(QuestionDataList, QuestionDataV2{
+			ID:                 i + 1,
+			RuleQuestionNumber: question.RuleQuestionNumber,
+			Text:               question.Text,
+			Choices:            choices,
+			QuestionNumber:     question.QuestionNumber,
+			RuleName:           question.Rule.Name,
+		})
+	}
+	err = tmpl.Execute(w, QuestionDataList)
+	if err != nil {
+		log.Printf("Error executing template: %s", err)
+	}
 }
 
 type QuestionListPageData struct {
