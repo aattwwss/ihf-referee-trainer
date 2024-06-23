@@ -1,0 +1,20 @@
+<div class="questions-container">
+    <form id="quiz-form">
+        {{range .}}
+            <div class="question-card" id="question-{{.RuleQuestionNumber}}">
+                <div class="question-header">
+                    <div class="question-number">Question {{.ID}}:</div>
+                </div>
+                <div class="question-text">{{.Text}}</div>
+                <div class="choices">
+                    {{range .Choices}}
+                        <label class="choice {{.Result}}">
+                            <input type="checkbox" name="choice{{.ID}}" value="{{.Option}} {{if .IsSelected}}checked{{end}}"> {{.Text}}
+                        </label>
+                    {{end}}
+                </div>
+            </div>
+        {{end}}
+        <button type="submit">Submit</button>
+    </form>
+</div>

@@ -62,12 +62,23 @@ type Question struct {
 	References         []Reference
 }
 
+// ChoiceResult is used in the template to represent the result of a choice
+// it should correspond to the class in the CSS
+type ChoiceResult string
+
+const (
+	ChoiceResultCorrect ChoiceResult = "correct"
+	ChoiceResultWrong   ChoiceResult = "wrong"
+	ChoiceResultMissing ChoiceResult = "missing"
+)
+
 type Choice struct {
 	ID         int
 	Option     string
 	Text       string
 	IsAnswer   bool
 	IsSelected bool
+	Result     *ChoiceResult
 }
 
 type Rule struct {

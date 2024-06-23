@@ -362,7 +362,7 @@ func (r *QuestionRepository) InsertFeedback(ctx context.Context, feedback Feedba
 func (r *QuestionRepository) InsertQuizConfig(ctx context.Context, quizConfig QuizConfig) (string, error) {
 	tx, err := r.db.BeginTx(ctx, pgx.TxOptions{})
 	entity := QuizConfigEntity{
-		Key:                getKey(),
+		Key:                generateQuizConfigKey(),
 		NumQuestions:       quizConfig.NumQuestions,
 		DurationInMinutes:  quizConfig.DurationInMinutes,
 		HasNegativeMarking: quizConfig.HasNegativeMarking,
@@ -391,6 +391,44 @@ func (r *QuestionRepository) InsertQuizConfig(ctx context.Context, quizConfig Qu
 	return entity.Key, nil
 }
 
-func getKey() string {
+func generateQuizConfigKey() string {
 	return fmt.Sprintf("%d", time.Now().UnixMilli())
+}
+
+func (r *QuestionRepository) GetQuizConfigByKey(ctx context.Context, key string) (*QuizConfig, error) {
+	query := fmt.Sprintf("SELECT * FROM quiz_config WHERE key = $1")
+	rows, err := r.db.Query(ctx, query, key)
+	if err != nil {
+		return nil, err
+	}
+	quizConfigEntity, err := pgx.CollectOneRow(rows, pgx.RowToStructByPos[QuizConfigEntity])
+	if err != nil {
+		return nil, err
+	}
+
+	query = fmt.Sprintf("SELECT rule_id FROM quiz_config_rules WHERE quiz_config_id = $1")
+	rows, err = r.db.Query(ctx, query, quizConfigEntity.ID)
+	if err != nil {
+		return nil, err
+	}
+	var ruleIDs []string
+	for rows.Next() {
+		var ruleID string
+		err = rows.Scan(&ruleID)
+		if err != nil {
+			return nil, err
+		}
+		ruleIDs = append(ruleIDs, ruleID)
+	}
+
+	return &QuizConfig{
+		ID:                 quizConfigEntity.ID,
+		Key:                quizConfigEntity.Key,
+		NumQuestions:       quizConfigEntity.NumQuestions,
+		DurationInMinutes:  quizConfigEntity.DurationInMinutes,
+		HasNegativeMarking: quizConfigEntity.HasNegativeMarking,
+		Seed:               quizConfigEntity.Seed,
+		RuleIDs:            ruleIDs,
+	}, nil
+
 }
