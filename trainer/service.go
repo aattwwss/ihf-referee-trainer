@@ -10,6 +10,7 @@ type Repository interface {
 	GetChoicesByQuestionID(ctx context.Context, questionID int) ([]Choice, error)
 	ListQuestions(ctx context.Context, rules []string, search string, lastRuleSortOrder int, lastQuestionNumber int, limit int) ([]Question, error)
 	InsertFeedback(ctx context.Context, feedback Feedback) error
+	InsertQuizConfig(ctx context.Context, config QuizConfig) (string, error)
 }
 
 type QuestionService struct {
@@ -46,4 +47,8 @@ func (s *QuestionService) ListQuestions(ctx context.Context, rules []string, sea
 
 func (s *QuestionService) SubmitFeedback(ctx context.Context, feedback Feedback) error {
 	return s.repository.InsertFeedback(ctx, feedback)
+}
+
+func (s *QuestionService) SubmitQuizConfig(ctx context.Context, config QuizConfig) (string, error) {
+	return s.repository.InsertQuizConfig(ctx, config)
 }

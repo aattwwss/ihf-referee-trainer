@@ -43,12 +43,13 @@ type QuizConfigEntity struct {
 	NumQuestions       int
 	DurationInMinutes  int
 	HasNegativeMarking bool
+	Seed               int
 }
 
 type QuizConfigRuleEntity struct {
 	ID           int
 	QuizConfigID int
-	RuleID       int
+	RuleID       string
 }
 
 type Question struct {
@@ -96,5 +97,6 @@ type QuizConfig struct {
 	NumQuestions       int
 	DurationInMinutes  int
 	HasNegativeMarking bool
-	RuleIDs            []int
+	Seed               int
+	RuleIDs            []string
 }

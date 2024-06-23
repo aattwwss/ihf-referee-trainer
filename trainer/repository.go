@@ -359,18 +359,19 @@ func (r *QuestionRepository) InsertFeedback(ctx context.Context, feedback Feedba
 	return nil
 }
 
-func (r *QuestionRepository) InsertQuizConfig(ctx context.Context, quizConfig QuizConfig) error {
+func (r *QuestionRepository) InsertQuizConfig(ctx context.Context, quizConfig QuizConfig) (string, error) {
 	tx, err := r.db.BeginTx(ctx, pgx.TxOptions{})
 	entity := QuizConfigEntity{
 		Key:                getKey(),
 		NumQuestions:       quizConfig.NumQuestions,
 		DurationInMinutes:  quizConfig.DurationInMinutes,
 		HasNegativeMarking: quizConfig.HasNegativeMarking,
+		Seed:               quizConfig.Seed,
 	}
-	query := fmt.Sprintf("INSERT INTO quiz_config (key, num_questions, duration_in_minutes, has_negative_marking) VALUES ($1, $2, $3, $4) RETURNING id")
-	err = tx.QueryRow(ctx, query, entity.Key, entity.NumQuestions, entity.DurationInMinutes, entity.HasNegativeMarking).Scan(&entity.ID)
+	query := fmt.Sprintf("INSERT INTO quiz_config (key, num_questions, duration_in_minutes, has_negative_marking, seed) VALUES ($1, $2, $3, $4, $5) RETURNING id")
+	err = tx.QueryRow(ctx, query, entity.Key, entity.NumQuestions, entity.DurationInMinutes, entity.HasNegativeMarking, entity.Seed).Scan(&entity.ID)
 	if err != nil {
-		return err
+		return "", err
 	}
 	_, err = tx.CopyFrom(
 		ctx,
@@ -381,13 +382,13 @@ func (r *QuestionRepository) InsertQuizConfig(ctx context.Context, quizConfig Qu
 		}),
 	)
 	if err != nil {
-		return err
+		return "", err
 	}
 	err = tx.Commit(ctx)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return entity.Key, nil
 }
 
 func getKey() string {

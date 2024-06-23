@@ -1,7 +1,7 @@
 {{block "content" .}}
     <div class="quiz-form-container">
         <h2>Quiz Configuration</h2>
-        <form id="quiz-config-form">
+        <form id="quiz-config-form" method="post">
             <input type="hidden" id="seed" name="seed" value="{{.Seed}}">
             <div class="quiz-form-group">
                 <label for="num-questions">Number of Questions:</label>
@@ -23,11 +23,11 @@
                 <label for="negative-marking" title="minus a point for a wrongly selected answer">Negative
                     Marking:</label>
                 <select id="negative-marking" name="negative-marking" required>
-                    <option value="yes">Yes</option>
-                    <option value="no" selected>No</option>
+                    <option value="true">Yes</option>
+                    <option value="false" selected>No</option>
                 </select>
             </div>
-            <button type="submit" formaction="/quiz">Start Quiz</button>
+            <button type="submit">Start Quiz</button>
         </form>
     </div>
     <script src="/static/quizConfig.js"></script>
