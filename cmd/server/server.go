@@ -61,7 +61,8 @@ func main() {
 	http.HandleFunc("POST /feedback", controller.SubmitFeedback)
 
 	http.HandleFunc("GET /quiz/config", controller.QuizConfig)
-	http.HandleFunc("GET /quiz", controller.DoQuiz)
+	http.HandleFunc("POST /quiz/config", controller.SubmitQuizConfig)
+	http.HandleFunc("GET /quiz/{key}", controller.DoQuiz)
 
 	// Set up and start the HTTP server on port 8080
 	port := "8080"

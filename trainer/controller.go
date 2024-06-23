@@ -7,7 +7,6 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
-	"net/url"
 	"slices"
 	"strconv"
 	"strings"
@@ -22,6 +21,7 @@ type Service interface {
 	GetChoicesByQuestionID(ctx context.Context, questionID int) ([]Choice, error)
 	ListQuestions(ctx context.Context, rules []string, search string, lastRuleSortOrder int, lastQuestionNumber int, limit int) ([]Question, error)
 	SubmitFeedback(ctx context.Context, feedback Feedback) error
+	SubmitQuizConfig(ctx context.Context, quizConfig QuizConfig) (string, error)
 }
 
 type Controller struct {
@@ -158,18 +158,32 @@ func (c *Controller) QuizConfig(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (c *Controller) DoQuiz(w http.ResponseWriter, r *http.Request) {
-	queries, _ := url.ParseQuery(r.URL.RawQuery)
-
-	log.Printf(queries.Get("seed"))
-	for _, v := range queries["rules"] {
-		log.Printf(v)
+func (c *Controller) SubmitQuizConfig(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		log.Printf("Error parsing query: %s", err)
 	}
-	log.Printf(queries.Get("negative-marking"))
-	log.Printf(queries.Get("duration"))
-	log.Printf(queries.Get("num-questions"))
+	seed, _ := strconv.Atoi(r.FormValue("seed"))
+	ruleIDs := r.Form["rules"]
+	numQuestions, _ := strconv.Atoi(r.FormValue("num-questions"))
+	duration, _ := strconv.Atoi(r.FormValue("duration"))
+	hasNegativeMarking, _ := strconv.ParseBool(r.FormValue("negative-marking"))
+	quizConfig := QuizConfig{
+		Seed:               seed,
+		RuleIDs:            ruleIDs,
+		NumQuestions:       numQuestions,
+		DurationInMinutes:  duration,
+		HasNegativeMarking: hasNegativeMarking,
+	}
+	key, err := c.service.SubmitQuizConfig(r.Context(), quizConfig)
+	if err != nil {
+		log.Printf("Error submitting quiz config: %s", err)
+	}
+	http.Redirect(w, r, fmt.Sprintf("/quiz/%s", key), http.StatusFound)
+}
 
-	w.Write([]byte("OK"))
+func (c *Controller) DoQuiz(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte(r.PathValue("key")))
 }
 
 type QuestionListPageData struct {
