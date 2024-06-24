@@ -129,8 +129,9 @@ func (c *Controller) SubmitFeedback(w http.ResponseWriter, r *http.Request) {
 }
 
 type QuizConfigData struct {
-	Seed        string
-	RulesFilter []QuizConfigRule
+	MaxNumQuestions int
+	Seed            string
+	RulesFilter     []QuizConfigRule
 }
 
 type QuizConfigRule struct {
@@ -144,6 +145,7 @@ func (c *Controller) QuizConfig(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error parsing template: %s", err)
 	}
 	rules, err := c.service.GetAllRules(r.Context())
+	questions, err := c.service.GetAllQuestions(r.Context())
 	var rulesFilter []QuizConfigRule
 	for _, rule := range rules {
 		rulesFilter = append(rulesFilter, QuizConfigRule{
@@ -152,8 +154,9 @@ func (c *Controller) QuizConfig(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	quizConfigData := QuizConfigData{
-		Seed:        fmt.Sprintf("%d", time.Now().UnixMilli()),
-		RulesFilter: rulesFilter,
+		MaxNumQuestions: len(questions),
+		Seed:            fmt.Sprintf("%d", time.Now().UnixMilli()),
+		RulesFilter:     rulesFilter,
 	}
 	err = tmpl.Execute(w, quizConfigData)
 	if err != nil {

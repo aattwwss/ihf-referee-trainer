@@ -68,7 +68,9 @@ func (s *QuestionService) SubmitQuizConfig(ctx context.Context, quizConfig QuizC
 
 	rand.Seed(uint64(quizConfig.Seed))
 	rand.Shuffle(len(questions), func(i, j int) { questions[i], questions[j] = questions[j], questions[i] })
-	questions = questions[:quizConfig.NumQuestions]
+	if len(questions) > quizConfig.NumQuestions {
+		questions = questions[:quizConfig.NumQuestions]
+	}
 	slices.SortFunc(questions, func(a, b Question) int {
 		if a.Rule.SortOrder == b.Rule.SortOrder {
 			return a.QuestionNumber - b.QuestionNumber
