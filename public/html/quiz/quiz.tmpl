@@ -1,6 +1,6 @@
 {{block "content" .}}
     <div class="questions-container">
-        <form id="quiz-form" hx-post="">
+        <form id="quiz-form" method="post">
             {{range .}}
                 <div class="question-card" id="question-{{.RuleQuestionNumber}}">
                     <div class="question-header">
@@ -19,5 +19,4 @@
             <button type="submit">Submit</button>
         </form>
     </div>
-    <script src="/static/quiz.js" defer></script>
 {{end}}

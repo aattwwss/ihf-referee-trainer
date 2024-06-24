@@ -19,11 +19,10 @@ type Service interface {
 	GetQuestionByID(ctx context.Context, id int) (*Question, error)
 	GetRandomQuestion(ctx context.Context, rules []string) (*Question, error)
 	GetChoicesByQuestionID(ctx context.Context, questionID int) ([]Choice, error)
-	ListQuestions(ctx context.Context, rules []string, search string, lastRuleSortOrder int, lastQuestionNumber int, limit int) ([]Question, error)
 	SubmitFeedback(ctx context.Context, feedback Feedback) error
 	SubmitQuizConfig(ctx context.Context, quizConfig QuizConfig) (string, error)
 	GetQuestionsByQuizConfigKey(ctx context.Context, key string) ([]Question, error)
-	EvaluateQuizAnswer(ctx context.Context, quizConfigKey string, choiceIDs []int) ([]Question, error)
+	EvaluateQuizAnswer(ctx context.Context, quizConfigKey string, choiceIDs []int) ([]QuestionResult, error)
 }
 
 type Controller struct {
@@ -191,7 +190,7 @@ func (c *Controller) DoQuiz(w http.ResponseWriter, r *http.Request) {
 	if key == "" {
 		http.Redirect(w, r, "/quiz/config", http.StatusFound)
 	}
-	allQuestions, err := c.service.GetQuestionsByQuizConfigKey(r.Context(), key)
+	questions, err := c.service.GetQuestionsByQuizConfigKey(r.Context(), key)
 	if err != nil {
 		log.Printf("Error getting quiz questions: %s", err)
 	}
@@ -201,7 +200,7 @@ func (c *Controller) DoQuiz(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error parsing template: %s", err)
 	}
 	var QuestionDataList []QuestionDataV2
-	for i, question := range allQuestions {
+	for i, question := range questions {
 		var choices []ChoiceDataV2
 		for _, choice := range question.Choices {
 			choices = append(choices, ChoiceDataV2{
@@ -225,8 +224,20 @@ func (c *Controller) DoQuiz(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type QuestionResultData struct {
+	QuestionDataV2
+	TotalScore int
+	Score      int
+}
+
+type QuizResultData struct {
+	QuestionResults []QuestionResultData
+	TotalScore      int
+	Score           int
+}
+
 func (c *Controller) SubmitQuiz(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFS(c.html, "quiz/result.tmpl")
+	tmpl, err := template.ParseFS(c.html, "base.tmpl", "quiz/result.tmpl")
 	if err != nil {
 		log.Printf("Error parsing template: %s", err)
 	}
@@ -237,7 +248,7 @@ func (c *Controller) SubmitQuiz(w http.ResponseWriter, r *http.Request) {
 	var choiceIDs []int
 	for k, _ := range r.Form {
 		suffix := strings.TrimPrefix(k, "choice")
-		suffix = strings.TrimSpace(suffix)
+		//suffix = strings.TrimSpace(suffix)
 		choiceID, err := strconv.Atoi(suffix)
 		if err != nil {
 			log.Printf("Error parsing choice ID: %s", err)
@@ -248,13 +259,15 @@ func (c *Controller) SubmitQuiz(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error evaluating quiz answer: %s", err)
 	}
-	var QuestionDataList []QuestionDataV2
+	var QuestionDataList []QuestionResultData
+	quizTotalScore := 0
+	quizScore := 0
 	for i, question := range questions {
 		var choices []ChoiceDataV2
 		for _, choice := range question.Choices {
 			var result string
 			if choice.Result != nil {
-				result = string(*choice.Result)
+				result = choice.Result.String()
 			}
 			choices = append(choices, ChoiceDataV2{
 				ID:         choice.ID,
@@ -264,162 +277,28 @@ func (c *Controller) SubmitQuiz(w http.ResponseWriter, r *http.Request) {
 				IsSelected: slices.Contains(choiceIDs, choice.ID),
 			})
 		}
-		QuestionDataList = append(QuestionDataList, QuestionDataV2{
-			ID:                 i + 1,
-			RuleQuestionNumber: question.RuleQuestionNumber,
-			Text:               question.Text,
-			Choices:            choices,
-			QuestionNumber:     question.QuestionNumber,
-			RuleName:           question.Rule.Name,
+		QuestionDataList = append(QuestionDataList, QuestionResultData{
+			QuestionDataV2: QuestionDataV2{
+				ID:                 i + 1,
+				RuleQuestionNumber: question.RuleQuestionNumber,
+				Text:               question.Text,
+				Choices:            choices,
+				QuestionNumber:     question.QuestionNumber,
+				RuleName:           question.Rule.Name,
+			},
+			TotalScore: question.TotalScore,
+			Score:      question.Score,
 		})
+		quizTotalScore += question.TotalScore
+		quizScore += question.Score
 	}
-	err = tmpl.Execute(w, QuestionDataList)
-	if err != nil {
-		log.Printf("Error executing template: %s", err)
-	}
-}
-
-type QuestionListPageData struct {
-	Questions     []QuestionData
-	LoadMoreParam LoadMoreParam
-}
-
-type QuestionData struct {
-	ID                 int
-	RuleID             string
-	RuleName           string
-	RuleQuestionNumber string
-	Text               string
-}
-
-type LoadMoreParam struct {
-	Search             string
-	LastRuleSortOrder  int
-	LastQuestionNumber int
-	LastIndex          int
-	Limit              int
-}
-
-func (c *Controller) QuestionByID(w http.ResponseWriter, r *http.Request) {
-	id := queryParamInt(r, "id", 0)
-	tmpl, err := template.ParseFS(c.html, "base.tmpl", "questionByID.tmpl")
-	if err != nil {
-		log.Printf("Error parsing template: %s", err)
-	}
-	err = tmpl.Execute(w, id)
-	if err != nil {
-		log.Printf("Error executing template: %s", err)
-	}
-}
-
-func (c *Controller) QuestionList(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFS(c.html, "questionList.tmpl")
-	if err != nil {
-		log.Printf("Error parsing template: %s", err)
-	}
-	search := strings.TrimSpace(queryParamString(r, "search", ""))
-	lastRuleSortOrder := queryParamInt(r, "lastRuleSortOrder", 0)
-	lastQuestionNumber := queryParamInt(r, "lastQuestionNumber", 0)
-	limit := 10
-	questions, err := c.service.ListQuestions(r.Context(), nil, search, lastRuleSortOrder, lastQuestionNumber, limit)
-	if err != nil {
-		log.Printf("Error getting questions: %s", err)
+	quizResultData := QuizResultData{
+		QuestionResults: QuestionDataList,
+		TotalScore:      quizTotalScore,
+		Score:           quizScore,
 	}
 
-	if len(questions) > 0 {
-		lastRuleSortOrder = questions[len(questions)-1].Rule.SortOrder
-		lastQuestionNumber = questions[len(questions)-1].QuestionNumber
-	}
-	var questionsData []QuestionData
-	for _, question := range questions {
-		questionsData = append(questionsData, QuestionData{
-			ID:                 question.ID,
-			RuleID:             question.Rule.ID,
-			RuleName:           question.Rule.Name,
-			RuleQuestionNumber: question.RuleQuestionNumber,
-			Text:               question.Text,
-		})
-	}
-	data := QuestionListPageData{
-		Questions: questionsData,
-		LoadMoreParam: LoadMoreParam{
-			LastRuleSortOrder:  lastRuleSortOrder,
-			LastQuestionNumber: lastQuestionNumber,
-			Limit:              10,
-		},
-	}
-
-	err = tmpl.Execute(w, data)
-	if err != nil {
-		log.Printf("Error executing template: %s", err)
-	}
-}
-
-func (c *Controller) RandomQuestion(w http.ResponseWriter, _ *http.Request) {
-	tmpl, err := template.ParseFS(c.html, "base.tmpl", "questionByID.tmpl")
-	if err != nil {
-		log.Printf("Error parsing template: %s", err)
-	}
-	err = tmpl.Execute(w, nil)
-	if err != nil {
-		log.Printf("Error executing template: %s", err)
-	}
-}
-
-func (c *Controller) NewQuestion(w http.ResponseWriter, r *http.Request) {
-	id := queryParamInt(r, "id", 0)
-	var question *Question
-	var err error
-	if id == 0 {
-		rules, err := getQueryStrings(r, "rules")
-		if err != nil {
-			log.Printf("Error getting query strings: %s", err)
-		}
-		question, err = c.service.GetRandomQuestion(r.Context(), rules)
-		if err != nil {
-			log.Printf("Error getting random question: %s", err)
-		}
-	} else {
-		question, err = c.service.GetQuestionByID(r.Context(), id)
-		if err != nil {
-			log.Printf("Error getting question: %s", err)
-		}
-	}
-	tmpl, err := template.ParseFS(c.html, "question.tmpl")
-	if err != nil {
-		log.Printf("Error parsing template: %s", err)
-	}
-	err = tmpl.Execute(w, question)
-	if err != nil {
-		log.Printf("Error executing template: %s", err)
-	}
-}
-
-func (c *Controller) Result(w http.ResponseWriter, r *http.Request) {
-	questionID, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/submit/"))
-	if err != nil {
-		log.Printf("Error parsing question ID: %s", err)
-	}
-	err = r.ParseForm()
-	if err != nil {
-		log.Printf("Error parsing form: %s", err)
-	}
-	selected := r.Form["choices"]
-	choices, err := c.service.GetChoicesByQuestionID(r.Context(), questionID)
-	for i, choice := range choices {
-		if slices.Contains(selected, choice.Option) {
-			choices[i].IsSelected = true
-		}
-	}
-	if err != nil {
-		log.Printf("Error getting choices: %s", err)
-	}
-
-	tmpl, err := template.ParseFS(c.html, "result.tmpl")
-	if err != nil {
-		log.Printf("Error parsing template: %s", err)
-	}
-	err = tmpl.Execute(w, choices)
+	err = tmpl.Execute(w, quizResultData)
 	if err != nil {
 		log.Printf("Error executing template: %s", err)
 	}
@@ -427,50 +306,4 @@ func (c *Controller) Result(w http.ResponseWriter, r *http.Request) {
 
 func (c *Controller) Health(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-}
-
-// getQueryStrings parses a list of query strings from the request.
-func getQueryStrings(r *http.Request, query string) ([]string, error) {
-	err := r.ParseForm()
-	if err != nil {
-		return nil, err
-	}
-	var ss []string
-	for _, s := range r.Form[query] {
-		ss = append(ss, strings.Split(s, ",")...)
-	}
-	return ss, nil
-}
-
-func queryParamString(r *http.Request, query string, defaultValue string) string {
-	if s := r.URL.Query().Get(query); s != "" {
-		return s
-	}
-	return defaultValue
-}
-
-func queryParamInt(r *http.Request, query string, defaultValue int) int {
-	s := r.URL.Query().Get(query)
-	if s == "" {
-		return 0
-	}
-	i, err := strconv.Atoi(s)
-	if err != nil {
-		log.Print("Error parsing int: ", err)
-		return defaultValue
-	}
-	return i
-}
-
-func queryParamBool(r *http.Request, query string, defaultValue bool) bool {
-	s := r.URL.Query().Get(query)
-	if s == "" {
-		return false
-	}
-	i, err := strconv.ParseBool(s)
-	if err != nil {
-		log.Print("Error parsing bool: ", err)
-		return defaultValue
-	}
-	return i
 }

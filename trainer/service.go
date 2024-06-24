@@ -2,8 +2,10 @@ package trainer
 
 import (
 	"context"
+	"fmt"
 	"golang.org/x/exp/rand"
 	"slices"
+	"time"
 )
 
 type Repository interface {
@@ -12,10 +14,10 @@ type Repository interface {
 	GetQuestionByID(ctx context.Context, id int) (*Question, error)
 	GetRandomQuestion(ctx context.Context, rules []string) (*Question, error)
 	GetChoicesByQuestionID(ctx context.Context, questionID int) ([]Choice, error)
-	ListQuestions(ctx context.Context, rules []string, search string, lastRuleSortOrder int, lastQuestionNumber int, limit int) ([]Question, error)
 	InsertFeedback(ctx context.Context, feedback Feedback) error
-	InsertQuizConfig(ctx context.Context, config QuizConfig) (string, error)
+	InsertQuizConfig(ctx context.Context, config QuizConfig, questions []Question) error
 	GetQuizConfigByKey(ctx context.Context, key string) (*QuizConfig, error)
+	GetQuestionsByQuizConfigKey(ctx context.Context, key string) ([]Question, error)
 }
 
 type QuestionService struct {
@@ -46,26 +48,15 @@ func (s *QuestionService) GetChoicesByQuestionID(ctx context.Context, questionID
 	return s.repository.GetChoicesByQuestionID(ctx, questionID)
 }
 
-func (s *QuestionService) ListQuestions(ctx context.Context, rules []string, search string, lastRuleSortOrder int, lastQuestionNumber int, limit int) ([]Question, error) {
-	return s.repository.ListQuestions(ctx, rules, search, lastRuleSortOrder, lastQuestionNumber, limit)
-}
-
 func (s *QuestionService) SubmitFeedback(ctx context.Context, feedback Feedback) error {
 	return s.repository.InsertFeedback(ctx, feedback)
 }
 
-func (s *QuestionService) SubmitQuizConfig(ctx context.Context, config QuizConfig) (string, error) {
-	return s.repository.InsertQuizConfig(ctx, config)
-}
-
-func (s *QuestionService) GetQuestionsByQuizConfigKey(ctx context.Context, key string) ([]Question, error) {
-	quizConfig, err := s.repository.GetQuizConfigByKey(ctx, key)
-	if err != nil {
-		return nil, err
-	}
+func (s *QuestionService) SubmitQuizConfig(ctx context.Context, quizConfig QuizConfig) (string, error) {
+	quizConfig.Key = fmt.Sprintf("%d", time.Now().UnixNano())
 	allQuestions, err := s.repository.GetAllQuestions(ctx)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	var questions []Question
@@ -84,29 +75,63 @@ func (s *QuestionService) GetQuestionsByQuizConfigKey(ctx context.Context, key s
 		}
 		return a.Rule.SortOrder - b.Rule.SortOrder
 	})
-	return questions[:quizConfig.NumQuestions], nil
+	err = s.repository.InsertQuizConfig(ctx, quizConfig, questions)
+	if err != nil {
+		return "", err
+	}
+	return quizConfig.Key, nil
 }
 
-func (s *QuestionService) EvaluateQuizAnswer(ctx context.Context, quizConfigKey string, choiceIDs []int) ([]Question, error) {
+// GetQuestionsByQuizConfigKey returns a list of questions for the quiz based on the quiz config key
+func (s *QuestionService) GetQuestionsByQuizConfigKey(ctx context.Context, key string) ([]Question, error) {
+	return s.repository.GetQuestionsByQuizConfigKey(ctx, key)
+}
+
+func (s *QuestionService) EvaluateQuizAnswer(ctx context.Context, quizConfigKey string, choiceIDs []int) ([]QuestionResult, error) {
+	quizConfig, err := s.repository.GetQuizConfigByKey(ctx, quizConfigKey)
+	if err != nil {
+		return nil, err
+	}
 	questions, err := s.GetQuestionsByQuizConfigKey(ctx, quizConfigKey)
 	if err != nil {
 		return nil, err
 	}
+	var questionResults []QuestionResult
 	for _, q := range questions {
-		for _, c := range q.Choices {
+		totalScore := 0
+		score := 0
+		for i, c := range q.Choices {
 			isSelected := slices.Contains(choiceIDs, c.ID)
 			if isSelected && c.IsAnswer {
-				c.Result = refOf(ChoiceResultCorrect)
+				q.Choices[i].Result = refOf(ChoiceResultCorrect)
+				totalScore += 1
 			} else if isSelected && !c.IsAnswer {
-				c.Result = refOf(ChoiceResultWrong)
+				q.Choices[i].Result = refOf(ChoiceResultWrong)
 			} else if !isSelected && c.IsAnswer {
-				c.Result = refOf(ChoiceResultMissing)
+				q.Choices[i].Result = refOf(ChoiceResultMissing)
+				totalScore += 1
+			}
+			if q.Choices[i].Result != nil {
+				score += q.Choices[i].Result.CalcScore()
 			}
 		}
+		if score < 0 && !quizConfig.HasNegativeMarking {
+			score = 0
+		}
+		questionResults = append(questionResults, QuestionResult{
+			Question:   q,
+			TotalScore: totalScore,
+			Score:      score,
+		})
 	}
-	return questions, nil
+	return questionResults, nil
 }
 
+// refOf returns a pointer to the given value
 func refOf[E any](e E) *E {
 	return &e
+}
+
+func generateQuizConfigKey() string {
+	return fmt.Sprintf("%d", time.Now().UnixMilli())
 }
