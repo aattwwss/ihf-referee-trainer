@@ -6,7 +6,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"strings"
-	"time"
 )
 
 type QuestionRepository struct {
@@ -260,7 +259,7 @@ func (r *QuestionRepository) GetAllRules(ctx context.Context) ([]Rule, error) {
 
 // ListQuestions returns a list of questions
 // supports pagination using the rule sort order and question number of the last question to offset
-func (r *QuestionRepository) ListQuestions(ctx context.Context, ruleIDs []string, search string, lastRuleSortOrder int, lastQuestionNumber int, limit int) ([]Question, error) {
+func (r *QuestionRepository) ListQuestions(ctx context.Context, questionIDs []int, ruleIDs []string, search string, lastRuleSortOrder int, lastQuestionNumber int, limit int) ([]Question, error) {
 	if len(ruleIDs) == 0 {
 		allRules, err := r.GetAllDistinctRuleIDs(ctx)
 		if err != nil {
@@ -275,10 +274,11 @@ func (r *QuestionRepository) ListQuestions(ctx context.Context, ruleIDs []string
 			AND ($2 = '' OR tsv @@ websearch_to_tsquery($2))
 			AND r.sort_order >= $3
 			AND q.question_number > $4
+			AND q.id = ANY($5)
 		ORDER BY r.sort_order, q.question_number 
-		LIMIT $5
+		LIMIT $6
 	`)
-	rows, err := r.db.Query(ctx, query, ruleIDs, strings.TrimSpace(search), lastRuleSortOrder, lastQuestionNumber, limit)
+	rows, err := r.db.Query(ctx, query, ruleIDs, strings.TrimSpace(search), lastRuleSortOrder, lastQuestionNumber, questionIDs, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -359,10 +359,10 @@ func (r *QuestionRepository) InsertFeedback(ctx context.Context, feedback Feedba
 	return nil
 }
 
-func (r *QuestionRepository) InsertQuizConfig(ctx context.Context, quizConfig QuizConfig) (string, error) {
+func (r *QuestionRepository) InsertQuizConfig(ctx context.Context, quizConfig QuizConfig, questions []Question) error {
 	tx, err := r.db.BeginTx(ctx, pgx.TxOptions{})
 	entity := QuizConfigEntity{
-		Key:                generateQuizConfigKey(),
+		Key:                quizConfig.Key,
 		NumQuestions:       quizConfig.NumQuestions,
 		DurationInMinutes:  quizConfig.DurationInMinutes,
 		HasNegativeMarking: quizConfig.HasNegativeMarking,
@@ -371,7 +371,7 @@ func (r *QuestionRepository) InsertQuizConfig(ctx context.Context, quizConfig Qu
 	query := fmt.Sprintf("INSERT INTO quiz_config (key, num_questions, duration_in_minutes, has_negative_marking, seed) VALUES ($1, $2, $3, $4, $5) RETURNING id")
 	err = tx.QueryRow(ctx, query, entity.Key, entity.NumQuestions, entity.DurationInMinutes, entity.HasNegativeMarking, entity.Seed).Scan(&entity.ID)
 	if err != nil {
-		return "", err
+		return err
 	}
 	_, err = tx.CopyFrom(
 		ctx,
@@ -382,17 +382,28 @@ func (r *QuestionRepository) InsertQuizConfig(ctx context.Context, quizConfig Qu
 		}),
 	)
 	if err != nil {
-		return "", err
+		return err
+	}
+	var questionIDs []int
+	for _, question := range questions {
+		questionIDs = append(questionIDs, question.ID)
+	}
+	_, err = tx.CopyFrom(
+		ctx,
+		pgx.Identifier{"quiz_config_questions"},
+		[]string{"quiz_config_id", "question_id"},
+		pgx.CopyFromSlice(len(questionIDs), func(i int) ([]interface{}, error) {
+			return []interface{}{entity.ID, questionIDs[i]}, nil
+		}),
+	)
+	if err != nil {
+		return err
 	}
 	err = tx.Commit(ctx)
 	if err != nil {
-		return "", err
+		return err
 	}
-	return entity.Key, nil
-}
-
-func generateQuizConfigKey() string {
-	return fmt.Sprintf("%d", time.Now().UnixMilli())
+	return nil
 }
 
 func (r *QuestionRepository) GetQuizConfigByKey(ctx context.Context, key string) (*QuizConfig, error) {
@@ -430,5 +441,32 @@ func (r *QuestionRepository) GetQuizConfigByKey(ctx context.Context, key string)
 		Seed:               quizConfigEntity.Seed,
 		RuleIDs:            ruleIDs,
 	}, nil
+}
 
+func (r *QuestionRepository) GetQuestionsByQuizConfigKey(ctx context.Context, key string) ([]Question, error) {
+	query := fmt.Sprintf("SELECT * FROM quiz_config WHERE key = $1")
+	rows, err := r.db.Query(ctx, query, key)
+	if err != nil {
+		return nil, err
+	}
+	quizConfigEntity, err := pgx.CollectOneRow(rows, pgx.RowToStructByPos[QuizConfigEntity])
+	if err != nil {
+		return nil, err
+	}
+
+	query = fmt.Sprintf("SELECT question_id FROM quiz_config_questions c join question q on c.question_id = q.id WHERE quiz_config_id = $1")
+	rows, err = r.db.Query(ctx, query, quizConfigEntity.ID)
+	if err != nil {
+		return nil, err
+	}
+	var questionIDs []int
+	for rows.Next() {
+		var questionID int
+		err = rows.Scan(&questionID)
+		if err != nil {
+			return nil, err
+		}
+		questionIDs = append(questionIDs, questionID)
+	}
+	return r.ListQuestions(ctx, questionIDs, nil, "", 0, 0, len(questionIDs))
 }

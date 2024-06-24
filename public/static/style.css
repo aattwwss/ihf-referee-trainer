@@ -315,3 +315,15 @@ button[type="submit"]:hover {
     margin: 0;
     box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
+
+.question-score {
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.total-score {
+    margin-bottom: 20px;
+    font-size: 1.5em;
+    font-weight: bold;
+    text-align: center;
+}

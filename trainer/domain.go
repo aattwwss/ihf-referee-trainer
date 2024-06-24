@@ -72,6 +72,21 @@ const (
 	ChoiceResultMissing ChoiceResult = "missing"
 )
 
+func (cr ChoiceResult) String() string {
+	return string(cr)
+}
+
+func (cr ChoiceResult) CalcScore() int {
+	switch cr {
+	case ChoiceResultCorrect:
+		return 1
+	case ChoiceResultWrong:
+		return -1
+	default:
+		return 0
+	}
+}
+
 type Choice struct {
 	ID         int
 	Option     string
@@ -110,4 +125,10 @@ type QuizConfig struct {
 	HasNegativeMarking bool
 	Seed               int
 	RuleIDs            []string
+}
+
+type QuestionResult struct {
+	Question
+	TotalScore int
+	Score      int
 }
