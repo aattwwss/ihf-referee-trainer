@@ -5,11 +5,11 @@
             <input type="hidden" id="seed" name="seed" value="{{.Seed}}">
             <div class="quiz-form-group">
                 <label for="num-questions">Number of Questions:</label>
-                <input type="text" inputmode="numeric" id="num-questions" name="num-questions" value="20" max="{{.MaxNumQuestions}}" required>
+                <input class="number-input" type="text" inputmode="numeric" id="num-questions" name="num-questions" value="20" max="{{.MaxNumQuestions}}" required>
             </div>
             <div class="quiz-form-group">
                 <label for="duration">Duration (minutes):</label>
-                <input type="number" id="duration" name="duration" value="60" required>
+                <input class="number-input" type="text" inputMode="numeric" id="duration" name="duration" value="60" required>
             </div>
             <div class="quiz-form-group">
                 <label for="rules">Rules Topics Tested:</label>
