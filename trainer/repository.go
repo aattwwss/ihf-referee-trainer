@@ -2,6 +2,7 @@ package trainer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -414,6 +415,9 @@ func (r *QuestionRepository) GetQuizConfigByKey(ctx context.Context, key string)
 	}
 	quizConfigEntity, err := pgx.CollectOneRow(rows, pgx.RowToStructByPos[QuizConfigEntity])
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
 		return nil, err
 	}
 
