@@ -1,7 +1,7 @@
 {{block "content" .}}
     <div class="questions-container">
         <div class="total-score">
-            You scored <span id="total-score">{{.Score}}</span> out of {{.TotalScore}}
+            You scored <span id="total-score">{{.Score}}</span> out of {{.TotalScore}} ({{.Percent}}%)
         </div>
         {{range .QuestionResults}}
             <div class="question-card" id="question-{{.RuleQuestionNumber}}">

@@ -2,10 +2,10 @@ package trainer
 
 import (
 	"context"
-	"fmt"
+	"github.com/sethvargo/go-diceware/diceware"
 	"golang.org/x/exp/rand"
 	"slices"
-	"time"
+	"strings"
 )
 
 type Repository interface {
@@ -53,7 +53,11 @@ func (s *QuestionService) SubmitFeedback(ctx context.Context, feedback Feedback)
 }
 
 func (s *QuestionService) SubmitQuizConfig(ctx context.Context, quizConfig QuizConfig) (string, error) {
-	quizConfig.Key = fmt.Sprintf("%d", time.Now().UnixNano())
+	key, err := s.generateQuizConfigKey(ctx)
+	if err != nil {
+		return "", err
+	}
+	quizConfig.Key = key
 	allQuestions, err := s.repository.GetAllQuestions(ctx)
 	if err != nil {
 		return "", err
@@ -134,6 +138,18 @@ func refOf[E any](e E) *E {
 	return &e
 }
 
-func generateQuizConfigKey() string {
-	return fmt.Sprintf("%d", time.Now().UnixMilli())
+func (s *QuestionService) generateQuizConfigKey(ctx context.Context) (string, error) {
+	list, err := diceware.Generate(3)
+	if err != nil {
+		return "", err
+	}
+	key := strings.Join(list, "-")
+	configInDB, err := s.repository.GetQuizConfigByKey(ctx, key)
+	if err != nil {
+		return "", err
+	}
+	if configInDB != nil {
+		return s.generateQuizConfigKey(ctx)
+	}
+	return key, nil
 }

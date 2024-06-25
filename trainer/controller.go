@@ -237,6 +237,7 @@ type QuizResultData struct {
 	QuestionResults []QuestionResultData
 	TotalScore      int
 	Score           int
+	Percent         int
 }
 
 func (c *Controller) SubmitQuiz(w http.ResponseWriter, r *http.Request) {
@@ -299,6 +300,7 @@ func (c *Controller) SubmitQuiz(w http.ResponseWriter, r *http.Request) {
 		QuestionResults: QuestionDataList,
 		TotalScore:      quizTotalScore,
 		Score:           quizScore,
+		Percent:         quizScore * 100 / quizTotalScore,
 	}
 
 	err = tmpl.Execute(w, quizResultData)
