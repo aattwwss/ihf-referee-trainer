@@ -170,7 +170,7 @@ func (c *Controller) SubmitQuizConfig(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error parsing query: %s", err)
 	}
 	seed, _ := strconv.Atoi(r.FormValue("seed"))
-	ruleIDs := r.Form["rules"]
+	ruleIDs := r.Form["rules-filter"]
 	numQuestions, _ := strconv.Atoi(r.FormValue("num-questions"))
 	duration, _ := strconv.Atoi(r.FormValue("duration"))
 	hasNegativeMarking, _ := strconv.ParseBool(r.FormValue("negative-marking"))

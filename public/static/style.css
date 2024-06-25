@@ -336,6 +336,27 @@ button[type="submit"]:hover {
     height: 250px;
 }
 
+.rules-filter-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.rules-filter-container .icons {
+    display: flex;
+    gap: 5px;
+}
+
+#rules-filter-select-all {
+    color: green; /* Green for select all */
+    cursor: pointer; /* Pointer cursor to indicate clickable item */
+}
+
+#rules-filter-clear-all {
+    color: red; /* Red for clear all */
+    cursor: pointer; /* Pointer cursor to indicate clickable item */
+}
+
 .question-score {
     font-weight: bold;
     margin-top: 10px;

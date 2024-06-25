@@ -24,3 +24,17 @@ textInputs.forEach(el => el.addEventListener('input', function (e) {
         }
     })
 )
+
+document.getElementById('rules-filter-select-all').addEventListener('click', function () {
+    const select = document.getElementById('rules-filter');
+    for (let i = 0; i < select.options.length; i++) {
+        select.options[i].selected = true;
+    }
+});
+
+document.getElementById('rules-filter-clear-all').addEventListener('click', function () {
+    const select = document.getElementById('rules-filter');
+    for (let i = 0; i < select.options.length; i++) {
+        select.options[i].selected = false;
+    }
+});
