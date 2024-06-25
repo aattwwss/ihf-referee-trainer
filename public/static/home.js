@@ -146,6 +146,6 @@ document.getElementById('clear-button').addEventListener('click', function () {
 });
 
 function scrollToQuestion(questionId) {
-    document.getElementById(questionId).scrollIntoView({behavior: 'smooth'});
+    document.getElementById(questionId).scrollIntoView();
     document.getElementById('menu-items').style.display = 'none';
 }

@@ -1,3 +1,7 @@
+:root {
+    scroll-behavior: smooth;
+}
+
 body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
@@ -62,7 +66,7 @@ header {
     text-decoration: underline;
 }
 
-.floating-menu, .floating-toggle, .floating-clear {
+.floating {
     position: fixed;
     bottom: 20px; /* Adjust position if necessary */
     right: 20px;
@@ -79,6 +83,15 @@ header {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.floating-scroll {
+    text-decoration: none;
+    display: none;
+    right: 50%;
+    top: 20px; /* Adjusted position to be above floating-toggle */
+    /*background-color: rgba(0, 123, 255, 0.7); !* Translucent blue *!*/
+    opacity: 0.5;
 }
 
 .floating-menu {
@@ -228,11 +241,13 @@ header {
 
 @media (max-width: 760px) {
     .floating-menu, .floating-toggle, .floating-clear {
-        background-color: rgba(0, 123, 255, 0.8); /* Translucent blue */
+        /*background-color: rgba(0, 123, 255, 0.8); !* Translucent blue *!*/
+        opacity: 0.7;
     }
 
     .floating-toggle.hide {
-        background-color: rgba(255, 99, 71, 0.8); /* Translucent red */
+        /*background-color: rgba(255, 99, 71, 0.8); !* Translucent red *!*/
+        opacity: 0.7;
     }
 }
 
