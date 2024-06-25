@@ -332,6 +332,10 @@ button[type="submit"]:hover {
     box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
 
+.quiz-form-group select[name='rules-filter'] {
+    height: 250px;
+}
+
 .question-score {
     font-weight: bold;
     margin-top: 10px;
