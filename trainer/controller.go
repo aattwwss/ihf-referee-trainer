@@ -112,9 +112,9 @@ func (c *Controller) SubmitFeedback(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error parsing form: %s", err)
 	}
 	err = c.service.SubmitFeedback(r.Context(), Feedback{
-		Name:  r.Form.Get("Name"),
+		Name:  r.Form.Get("name"),
 		Email: r.Form.Get("email"),
-		Topic: r.Form.Get("topic"),
+		Topic: r.Form.Get("feedback-category"),
 		Text:  r.Form.Get("feedback"),
 	})
 	if err != nil {
