@@ -12,8 +12,8 @@
 {{/*                <input class="number-input" type="text" inputMode="numeric" id="duration" name="duration" value="60" required>*/}}
 {{/*            </div>*/}}
             <div class="quiz-form-group">
-                <label for="rules">Rules Topics Tested:</label>
-                <select id="rules" name="rules" multiple required>
+                <label for="rules-filter">Rules Topics Tested:</label>
+                <select id="rules-filter" name="rules-filter" multiple required>
                     {{ range .RulesFilter }}
                         <option selected value="{{.ID}}">{{ .ID }} - {{ .Name }}</option>
                     {{ end }}
