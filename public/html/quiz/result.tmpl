@@ -13,7 +13,7 @@
                 <div class="choices">
                     {{range .Choices}}
                         <label class="choice {{.Result}}">
-                            <input type="checkbox" name="choice{{.ID}}" value="{{.Option}}"
+                            <input type="checkbox" name="choice{{.ID}}" value="{{.Option}}" disabled
                                    {{if .IsSelected}}checked{{end}}> {{.Text}}
                         </label>
                     {{end}}
