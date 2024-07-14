@@ -343,6 +343,33 @@ func (r *QuestionRepository) FindChoicesByQuestionIds(ctx context.Context, quest
 	return choiceMap, nil
 }
 
+// FindReferencesByQuestionIds finds references by question ids and returns a map of question id to references
+func (r *QuestionRepository) FindReferencesByQuestionIds(ctx context.Context, questionIds ...int) (map[int][]Reference, error) {
+	query := fmt.Sprintf("SELECT * FROM reference WHERE question_id = ANY($1) order by id")
+	rows, err := r.db.Query(ctx, query, questionIds)
+	if err != nil {
+		return nil, err
+	}
+	referenceEntities, err := pgx.CollectRows(rows, pgx.RowToStructByPos[ReferenceEntity])
+	if err != nil {
+		return nil, err
+	}
+	var referenceMap = make(map[int][]Reference)
+	for _, referenceEntity := range referenceEntities {
+		references, ok := referenceMap[referenceEntity.QuestionId]
+		if !ok {
+			references = []Reference{}
+		}
+
+		references = append(references, Reference{
+			ID:   referenceEntity.ID,
+			Text: referenceEntity.Text,
+		})
+		referenceMap[referenceEntity.QuestionId] = references
+	}
+	return referenceMap, nil
+}
+
 func (r *QuestionRepository) InsertFeedback(ctx context.Context, feedback Feedback) error {
 	feedbackEntity := FeedbackEntity{
 		Name:           feedback.Name,

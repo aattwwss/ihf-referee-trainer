@@ -18,6 +18,7 @@ type Repository interface {
 	InsertQuizConfig(ctx context.Context, config QuizConfig, questions []Question) error
 	GetQuizConfigByKey(ctx context.Context, key string) (*QuizConfig, error)
 	GetQuestionsByQuizConfigKey(ctx context.Context, key string) ([]Question, error)
+	FindReferencesByQuestionIds(ctx context.Context, questionIds ...int) (map[int][]Reference, error)
 }
 
 type QuestionService struct {
@@ -102,6 +103,11 @@ func (s *QuestionService) EvaluateQuizAnswer(ctx context.Context, quizConfigKey 
 	if err != nil {
 		return nil, err
 	}
+	var questionIDs []int
+	for _, question := range questions {
+		questionIDs = append(questionIDs, question.ID)
+	}
+	referencesMap, err := s.repository.FindReferencesByQuestionIds(ctx, questionIDs...)
 	var questionResults []QuestionResult
 	for _, q := range questions {
 		totalScore := 0
@@ -124,6 +130,7 @@ func (s *QuestionService) EvaluateQuizAnswer(ctx context.Context, quizConfigKey 
 		if score < 0 && !quizConfig.HasNegativeMarking {
 			score = 0
 		}
+		q.References = referencesMap[q.ID]
 		questionResults = append(questionResults, QuestionResult{
 			Question:   q,
 			TotalScore: totalScore,

@@ -45,6 +45,7 @@ type QuestionDataV2 struct {
 	Choices            []ChoiceDataV2
 	QuestionNumber     int
 	RuleName           string
+	References         []Reference
 }
 
 type ChoiceDataV2 struct {
@@ -250,9 +251,8 @@ func (c *Controller) SubmitQuiz(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error parsing form: %s", err)
 	}
 	var choiceIDs []int
-	for k, _ := range r.Form {
+	for k := range r.Form {
 		suffix := strings.TrimPrefix(k, "choice")
-		//suffix = strings.TrimSpace(suffix)
 		choiceID, err := strconv.Atoi(suffix)
 		if err != nil {
 			log.Printf("Error parsing choice ID: %s", err)
@@ -289,6 +289,7 @@ func (c *Controller) SubmitQuiz(w http.ResponseWriter, r *http.Request) {
 				Choices:            choices,
 				QuestionNumber:     question.QuestionNumber,
 				RuleName:           question.Rule.Name,
+				References:         question.References,
 			},
 			TotalScore: question.TotalScore,
 			Score:      question.Score,
