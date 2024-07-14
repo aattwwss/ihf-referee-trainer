@@ -2,10 +2,11 @@ package trainer
 
 import (
 	"context"
-	"github.com/sethvargo/go-diceware/diceware"
-	"golang.org/x/exp/rand"
 	"slices"
 	"strings"
+
+	"github.com/sethvargo/go-diceware/diceware"
+	"golang.org/x/exp/rand"
 )
 
 type Repository interface {

@@ -56,10 +56,26 @@ type ChoiceDataV2 struct {
 	IsSelected bool
 }
 
+func (c *Controller) handleNotFound(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFS(c.html, "base.tmpl", "notFound.tmpl")
+	if err != nil {
+		c.handleError(w, r, fmt.Errorf("Error parsing template: %w", err))
+	}
+	w.WriteHeader(http.StatusNotFound)
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		c.handleError(w, r, fmt.Errorf("Error executing template: %w", err))
+	}
+}
+
 func (c *Controller) Home(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		c.handleNotFound(w, r)
+		return
+	}
 	tmpl, err := template.ParseFS(c.html, "base.tmpl", "home.tmpl")
 	if err != nil {
-		log.Printf("Error parsing template: %s", err)
+		c.handleError(w, r, fmt.Errorf("Error parsing template: %w", err))
 	}
 	allQuestions, err := c.service.GetAllQuestions(r.Context())
 	var QuestionDataList []QuestionDataV2
@@ -88,25 +104,25 @@ func (c *Controller) Home(w http.ResponseWriter, r *http.Request) {
 	}
 	err = tmpl.Execute(w, QuestionDataList)
 	if err != nil {
-		log.Printf("Error executing template: %s", err)
+		c.handleError(w, r, fmt.Errorf("Error executing template: %w", err))
 	}
 }
 
-func (c *Controller) Feedback(w http.ResponseWriter, _ *http.Request) {
+func (c *Controller) Feedback(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFS(c.html, "base.tmpl", "feedback/feedback.tmpl")
 	if err != nil {
-		log.Printf("Error parsing template: %s", err)
+		c.handleError(w, r, fmt.Errorf("Error parsing template: %w", err))
 	}
 	err = tmpl.Execute(w, nil)
 	if err != nil {
-		log.Printf("Error executing template: %s", err)
+		c.handleError(w, r, fmt.Errorf("Error executing template: %w", err))
 	}
 }
 
 func (c *Controller) SubmitFeedback(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFS(c.html, "feedback/submitFeedback.tmpl")
 	if err != nil {
-		log.Printf("Error parsing template: %s", err)
+		c.handleError(w, r, fmt.Errorf("Error parsing template: %w", err))
 	}
 	err = r.ParseForm()
 	if err != nil {
@@ -124,7 +140,7 @@ func (c *Controller) SubmitFeedback(w http.ResponseWriter, r *http.Request) {
 
 	err = tmpl.Execute(w, nil)
 	if err != nil {
-		log.Printf("Error executing template: %s", err)
+		c.handleError(w, r, fmt.Errorf("Error executing template: %w", err))
 	}
 
 }
@@ -143,7 +159,7 @@ type QuizConfigRule struct {
 func (c *Controller) QuizConfig(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFS(c.html, "base.tmpl", "quiz/quizConfig.tmpl")
 	if err != nil {
-		log.Printf("Error parsing template: %s", err)
+		c.handleError(w, r, fmt.Errorf("Error parsing template: %w", err))
 	}
 	rules, err := c.service.GetAllRules(r.Context())
 	questions, err := c.service.GetAllQuestions(r.Context())
@@ -161,7 +177,7 @@ func (c *Controller) QuizConfig(w http.ResponseWriter, r *http.Request) {
 	}
 	err = tmpl.Execute(w, quizConfigData)
 	if err != nil {
-		log.Printf("Error executing template: %s", err)
+		c.handleError(w, r, fmt.Errorf("Error executing template: %w", err))
 	}
 }
 
@@ -198,10 +214,14 @@ func (c *Controller) DoQuiz(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error getting quiz questions: %s", err)
 	}
+	if len(questions) == 0 {
+		c.handleNotFound(w, r)
+		return
+	}
 
 	tmpl, err := template.ParseFS(c.html, "base.tmpl", "quiz/quiz.tmpl")
 	if err != nil {
-		log.Printf("Error parsing template: %s", err)
+		c.handleError(w, r, fmt.Errorf("Error parsing template: %w", err))
 	}
 	var QuestionDataList []QuestionDataV2
 	for i, question := range questions {
@@ -224,7 +244,7 @@ func (c *Controller) DoQuiz(w http.ResponseWriter, r *http.Request) {
 	}
 	err = tmpl.Execute(w, QuestionDataList)
 	if err != nil {
-		log.Printf("Error executing template: %s", err)
+		c.handleError(w, r, fmt.Errorf("Error executing template: %w", err))
 	}
 }
 
@@ -244,7 +264,7 @@ type QuizResultData struct {
 func (c *Controller) SubmitQuiz(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFS(c.html, "base.tmpl", "quiz/result.tmpl")
 	if err != nil {
-		log.Printf("Error parsing template: %s", err)
+		c.handleError(w, r, fmt.Errorf("Error parsing template: %w", err))
 	}
 	err = r.ParseForm()
 	if err != nil {
@@ -305,6 +325,19 @@ func (c *Controller) SubmitQuiz(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = tmpl.Execute(w, quizResultData)
+	if err != nil {
+		c.handleError(w, r, fmt.Errorf("Error executing template: %w", err))
+	}
+}
+
+func (c *Controller) handleError(w http.ResponseWriter, r *http.Request, err error) {
+	log.Printf("Internal server error: %v", err)
+	tmpl, err := template.ParseFS(c.html, "base.tmpl", "error.tmpl")
+	if err != nil {
+		log.Printf("Error parsing template: %s", err)
+	}
+	w.WriteHeader(http.StatusInternalServerError)
+	err = tmpl.Execute(w, nil)
 	if err != nil {
 		log.Printf("Error executing template: %s", err)
 	}
