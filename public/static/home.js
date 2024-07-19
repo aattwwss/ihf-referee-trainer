@@ -1,4 +1,20 @@
-document.getElementById('toggle-button').addEventListener('click', function () {
+document.getElementById('toggle-reference-button').addEventListener('click', function() {
+    const references = document.querySelectorAll('.references');
+    references.forEach(reference => {
+        if (reference.classList.contains('hide')) {
+            reference.classList.remove('hide');
+        } else {
+            reference.classList.add('hide');
+        }
+        // if (reference.style.display === 'block') {
+        //     reference.style.display = 'none';
+        // } else {
+        //     reference.style.display = 'block';
+        // }
+    });
+});
+
+document.getElementById('toggle-button').addEventListener('click', function() {
     const allQuestionCards = document.querySelectorAll('.question-card');
     const isShowingAnswers = this.className.includes('hide');
 
@@ -95,7 +111,7 @@ document.querySelectorAll('.choice input[type="checkbox"]').forEach(checkbox => 
 });
 
 document.querySelectorAll('.read-checkbox').forEach(checkbox => {
-    checkbox.addEventListener('change', function () {
+    checkbox.addEventListener('change', function() {
         const card = this.closest('.question-card');
         if (this.checked) {
             card.classList.add('read');
@@ -106,7 +122,7 @@ document.querySelectorAll('.read-checkbox').forEach(checkbox => {
     });
 });
 
-document.getElementById('menu-button').addEventListener('click', function () {
+document.getElementById('menu-button').addEventListener('click', function() {
     const menuItems = document.getElementById('menu-items');
     menuItems.style.display = menuItems.style.display === 'block' ? 'none' : 'block';
     if (menuItems.style.display === 'block') {
@@ -114,7 +130,7 @@ document.getElementById('menu-button').addEventListener('click', function () {
     }
 });
 
-document.addEventListener('click', function (event) {
+document.addEventListener('click', function(event) {
     const menuItems = document.getElementById('menu-items');
     const menuButton = document.getElementById('menu-button');
     if (menuItems.style.display === 'block' && !menuButton.contains(event.target) && !menuItems.contains(event.target)) {
@@ -122,7 +138,7 @@ document.addEventListener('click', function (event) {
     }
 });
 
-document.getElementById('clear-button').addEventListener('click', function () {
+document.getElementById('clear-button').addEventListener('click', function() {
     const choiceCheckboxes = document.querySelectorAll('.choice input[type="checkbox"]');
     choiceCheckboxes.forEach(checkbox => {
         checkbox.checked = false;

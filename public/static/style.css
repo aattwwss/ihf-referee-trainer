@@ -2,6 +2,10 @@
     scroll-behavior: smooth;
 }
 
+.hide {
+    display: none;
+}
+
 body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
@@ -29,7 +33,6 @@ header {
     justify-content: space-between;
     width: 100%;
 }
-
 
 .header-icon {
     width: 40px;
@@ -94,15 +97,33 @@ header {
 }
 
 .floating-menu {
-    bottom: 140px;
+    bottom: 200px;
 }
 
 .floating-clear {
+    bottom: 140px;
+}
+
+.floating-reference-toggle {
     bottom: 80px;
 }
 
 .floating-toggle.hide {
     background-color: #ff6347;
+}
+
+@media (max-width: 760px) {
+
+    .floating-menu,
+    .floating-reference-toggle,
+    .floating-toggle,
+    .floating-clear {
+        opacity: 0.7;
+    }
+
+    .floating-toggle.hide {
+        opacity: 0.7;
+    }
 }
 
 .menu-items {
@@ -236,19 +257,6 @@ header {
 
 .missing {
     background-color: yellow;
-}
-
-@media (max-width: 760px) {
-
-    .floating-menu,
-    .floating-toggle,
-    .floating-clear {
-        opacity: 0.7;
-    }
-
-    .floating-toggle.hide {
-        opacity: 0.7;
-    }
 }
 
 /*Feedback Page*/

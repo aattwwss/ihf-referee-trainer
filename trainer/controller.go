@@ -103,6 +103,7 @@ func (c *Controller) Home(w http.ResponseWriter, r *http.Request) {
 			Choices:            choices,
 			QuestionNumber:     question.QuestionNumber,
 			RuleName:           question.Rule.Name,
+			References:         question.References,
 		})
 	}
 	err = tmpl.Execute(w, QuestionDataList)

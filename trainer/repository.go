@@ -38,6 +38,7 @@ func (r *QuestionRepository) GetAllQuestions(ctx context.Context) ([]Question, e
 		questionIds = append(questionIds, questionEntity.ID)
 	}
 	choiceMap, err := r.FindChoicesByQuestionIds(ctx, questionIds...)
+	referencesMap, err := r.FindReferencesByQuestionIds(ctx, questionIds...)
 	ruleIDs, err := r.GetAllDistinctRuleIDs(ctx)
 	rulesMap, err := r.FindRuleByIDs(ctx, ruleIDs...)
 	var questions []Question
@@ -54,6 +55,7 @@ func (r *QuestionRepository) GetAllQuestions(ctx context.Context) ([]Question, e
 			QuestionNumber:     questionEntity.QuestionNumber,
 			RuleQuestionNumber: ruleQuestionNumber,
 			Choices:            choiceMap[questionEntity.ID],
+			References:         referencesMap[questionEntity.ID],
 		}
 		questions = append(questions, question)
 	}
@@ -293,6 +295,7 @@ func (r *QuestionRepository) ListQuestions(ctx context.Context, questionIDs []in
 	}
 	choiceMap, err := r.FindChoicesByQuestionIds(ctx, questionIds...)
 	rulesMap, err := r.FindRuleByIDs(ctx, ruleIDs...)
+	referencesMap, err := r.FindReferencesByQuestionIds(ctx, questionIds...)
 	var questions []Question
 	for _, questionEntity := range questionEntities {
 		separator := "."
@@ -307,6 +310,7 @@ func (r *QuestionRepository) ListQuestions(ctx context.Context, questionIDs []in
 			QuestionNumber:     questionEntity.QuestionNumber,
 			RuleQuestionNumber: ruleQuestionNumber,
 			Choices:            choiceMap[questionEntity.ID],
+			References:         referencesMap[questionEntity.ID],
 		}
 		questions = append(questions, question)
 	}

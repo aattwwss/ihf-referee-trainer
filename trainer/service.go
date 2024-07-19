@@ -108,7 +108,6 @@ func (s *QuestionService) EvaluateQuizAnswer(ctx context.Context, quizConfigKey 
 	for _, question := range questions {
 		questionIDs = append(questionIDs, question.ID)
 	}
-	referencesMap, err := s.repository.FindReferencesByQuestionIds(ctx, questionIDs...)
 	var questionResults []QuestionResult
 	for _, q := range questions {
 		totalScore := 0
@@ -131,7 +130,6 @@ func (s *QuestionService) EvaluateQuizAnswer(ctx context.Context, quizConfigKey 
 		if score < 0 && !quizConfig.HasNegativeMarking {
 			score = 0
 		}
-		q.References = referencesMap[q.ID]
 		questionResults = append(questionResults, QuestionResult{
 			Question:   q,
 			TotalScore: totalScore,
