@@ -216,6 +216,11 @@ func splitAnswer(s string) (string, int, []string, []string) {
 	return rule, questionNumber, correctAnswers, references
 }
 
+// soome rule question number uses comma, while others uses colon
+func ruleQuestionNumSeparator(r rune) bool {
+	return r == ':' || r == '.'
+}
+
 // given the rule and question number, return the rule and the question number
 // 18.7) -> "18", 7
 // SAR1 -> "SAR", 1
@@ -229,7 +234,7 @@ func getRuleQuestionNum(s string) (string, int) {
 		rule = "SAR"
 		questionNumberString = strings.TrimLeft(s, "SAR")
 	} else {
-		arr := strings.Split(s, ".")
+		arr := strings.FieldsFunc(s, ruleQuestionNumSeparator)
 		rule = arr[0]
 		questionNumberString = arr[1]
 	}
