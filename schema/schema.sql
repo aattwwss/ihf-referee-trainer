@@ -76,3 +76,24 @@ create table quiz_config_questions
 UPDATE question
 SET tsv = setweight(to_tsvector(text), 'A');
 CREATE INDEX idx_question_tsv ON question USING GIN (tsv);
+
+INSERT INTO rule (id, name, sort_order) VALUES
+	('1', 'Playing Court', '0'),
+	('2', 'Playing Time, Final Signal and Time-Out', '1'),
+	('3', 'The Ball', '2'),
+	('4', 'The Team, Substitutions, Equipment, Player Injuries', '3'),
+	('5', 'The Goalkeeper', '4'),
+	('6', 'The Goal Area', '5'),
+	('7', 'Playing the Ball, Passive Play', '6'),
+	('8', 'Fouls and Unsportmanlike Conduct', '7'),
+	('9', 'Scoring', '8'),
+	('10', 'The Throw-Off', '9'),
+	('11', 'The Throw-In', '10'),
+	('12', 'The Goalkeeper Throw', '11'),
+	('13', 'The Free Throw', '12'),
+	('14', 'The 7-Metre Throw', '13'),
+	('15', 'General Instructions on the Execution of the Throws', '14'),
+	('16', 'The Punishments', '15'),
+	('17', 'The Referees', '16'),
+	('18', 'The Timekeeper and the Scorekeeper', '17'),
+	('SAR', 'Substitution Area Regulations', '18');
