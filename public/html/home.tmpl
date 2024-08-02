@@ -3,7 +3,15 @@
     {{range .}}
     <div class="question-card" data-correct="{{.CorrectChoices}}" id="question-{{.RuleQuestionNumber}}">
         <div class="question-header">
-            <div class="question-number">Question {{.ID}}:</div>
+            <div class="question-number-and-actions">
+                <div class="question-number">Question {{.ID}}</div>
+                <div class="question-card-buttons">
+                    <button class="question-card-button single-reference-toggle" title="Show/Hide reference"><i
+                            class="fas fa-book"></i></button>
+                    <button class="question-card-button single-answer-toggle" title="Show/Hide answers"><i
+                            class="fas fa-eye"></i></button>
+                </div>
+            </div>
             <label class="read-toggle">
                 <input type="checkbox" class="read-checkbox">
                 <span class="slider round"></span>

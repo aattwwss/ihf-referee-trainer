@@ -14,41 +14,74 @@ document.getElementById('toggle-reference-button').addEventListener('click', fun
     });
 });
 
-document.getElementById('toggle-button').addEventListener('click', function() {
-    const allQuestionCards = document.querySelectorAll('.question-card');
-    const isShowingAnswers = this.className.includes('hide');
 
-    allQuestionCards.forEach(card => {
-        const correctAnswers = card.dataset.correct.split(',');
-        const choices = card.querySelectorAll('.choice input[type="checkbox"]');
+const CORRECT_ANSWER = 'correct';
+const WRONG_ANSWER = 'wrong';
+const MISSING_ANSWER = 'missing';
 
-        choices.forEach(choice => {
-            const parentLabel = choice.parentElement;
-            if (!isShowingAnswers) {
-                if (choice.checked && correctAnswers.includes(choice.value)) {
-                    parentLabel.classList.add('correct');
-                    parentLabel.classList.remove('wrong', 'missing');
-                } else if (choice.checked && !correctAnswers.includes(choice.value)) {
-                    parentLabel.classList.add('wrong');
-                    parentLabel.classList.remove('correct', 'missing');
-                } else if (!choice.checked && correctAnswers.includes(choice.value)) {
-                    parentLabel.classList.add('missing');
-                    parentLabel.classList.remove('correct', 'wrong');
-                } else {
-                    parentLabel.classList.remove('correct', 'wrong', 'missing');
-                }
+function toggleAnswer(questionCard, displayAnswer) {
+    const correctAnswers = questionCard.dataset.correct.split(',');
+    const choices = questionCard.querySelectorAll('.choice input[type="checkbox"]');
+
+    choices.forEach(choice => {
+        const parentLabel = choice.parentElement;
+        if (displayAnswer) {
+            if (choice.checked && correctAnswers.includes(choice.value)) {
+                parentLabel.classList.add(CORRECT_ANSWER);
+                parentLabel.classList.remove(WRONG_ANSWER, MISSING_ANSWER);
+            } else if (choice.checked && !correctAnswers.includes(choice.value)) {
+                parentLabel.classList.add(WRONG_ANSWER);
+                parentLabel.classList.remove(CORRECT_ANSWER, MISSING_ANSWER);
+            } else if (!choice.checked && correctAnswers.includes(choice.value)) {
+                parentLabel.classList.add(MISSING_ANSWER);
+                parentLabel.classList.remove(CORRECT_ANSWER, WRONG_ANSWER);
             } else {
-                parentLabel.classList.remove('correct', 'wrong', 'missing');
+                parentLabel.classList.remove(CORRECT_ANSWER, WRONG_ANSWER, MISSING_ANSWER);
             }
-        });
+        } else {
+            parentLabel.classList.remove(CORRECT_ANSWER, WRONG_ANSWER, MISSING_ANSWER);
+        }
+    });
+}
+
+function isQuestionCardAnswerDisplaying(questionCard) {
+    const choices = questionCard.querySelectorAll('.choice input[type="checkbox"]');
+    return Array.from(choices).some(choice =>
+        [CORRECT_ANSWER, WRONG_ANSWER, MISSING_ANSWER].some(answer =>
+            choice.parentElement.classList.contains(answer)
+        )
+    );
+}
+
+document.querySelectorAll('.single-answer-toggle').forEach(toggle => {
+    const questionCard = toggle.closest('.question-card');
+    toggle.addEventListener('click', function() {
+        const isDisplayingAnswers = isQuestionCardAnswerDisplaying(questionCard);
+        toggleAnswer(questionCard, !isDisplayingAnswers);
+        if (isDisplayingAnswers) {
+            this.innerHTML = '<i class="fas fa-eye"></i>';
+        } else {
+            this.innerHTML = '<i class="fas fa-eye-slash"></i>';
+        }
+    });
+});
+
+document.getElementById('toggle-button').addEventListener('click', function() {
+    const isGlobalAnswerToggled = this.className.includes('toggled');
+    const allSingleAnswerToggles = document.querySelectorAll('.single-answer-toggle');
+    allSingleAnswerToggles.forEach(toggle => {
+        const questionCardAnswerToggled = isQuestionCardAnswerDisplaying(toggle.closest('.question-card'));
+        if (questionCardAnswerToggled === isGlobalAnswerToggled) {
+            toggle.click();
+        }
     });
 
-    if (isShowingAnswers) {
+    if (isGlobalAnswerToggled) {
         this.innerHTML = '<i class="fas fa-eye"></i>';
-        this.classList.remove('hide');
+        this.classList.remove('toggled');
     } else {
         this.innerHTML = '<i class="fas fa-eye-slash"></i>';
-        this.classList.add('hide');
+        this.classList.add('toggled');
     }
     saveState();
 });
@@ -100,7 +133,7 @@ function saveState() {
     });
     localStorage.setItem(READ_CHECK_MAP_KEY, JSON.stringify(readCheckMap));
 
-    const isShowingAnswers = document.getElementById('toggle-button').className.includes('hide');
+    const isShowingAnswers = document.getElementById('toggle-button').className.includes('toggled');
     localStorage.setItem(SHOW_ANSWERS_KEY, `${isShowingAnswers}`);
 }
 
