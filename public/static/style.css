@@ -108,7 +108,8 @@ header {
     bottom: 80px;
 }
 
-.floating-toggle.toggled {
+.floating-toggle.toggled,
+.floating-reference-toggle.toggled {
     background-color: #ff6347;
 }
 
@@ -121,7 +122,8 @@ header {
         opacity: 0.7;
     }
 
-    .floating-toggle.toggled {
+    .floating-toggle.toggled,
+    .floating-reference-toggle.toggled {
         opacity: 0.7;
     }
 }

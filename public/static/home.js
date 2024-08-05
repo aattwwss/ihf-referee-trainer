@@ -1,19 +1,38 @@
-document.getElementById('toggle-reference-button').addEventListener('click', function() {
-    const references = document.querySelectorAll('.references');
-    references.forEach(reference => {
-        if (reference.classList.contains('hide')) {
-            reference.classList.remove('hide');
-        } else {
-            reference.classList.add('hide');
-        }
-        // if (reference.style.display === 'block') {
-        //     reference.style.display = 'none';
-        // } else {
-        //     reference.style.display = 'block';
-        // }
+function toggleReferences(references) {
+    if (references.classList.contains('hide')) {
+        references.classList.remove('hide');
+    } else {
+        references.classList.add('hide');
+    }
+}
+
+function isQuestionCardDisplayingReferences(questionCard) {
+    return !questionCard.getElementsByClassName('references')[0].classList.contains('hide');
+}
+
+document.querySelectorAll('.single-reference-toggle').forEach(toggle => {
+    const questionCard = toggle.closest('.question-card');
+    const references = questionCard.getElementsByClassName('references')[0];
+    toggle.addEventListener('click', function() {
+        toggleReferences(references);
     });
 });
 
+document.getElementById('toggle-reference-button').addEventListener('click', function() {
+    const references = document.querySelectorAll('.references');
+    const isGlobalReferencesToggled = this.classList.contains('toggled');
+    if (isGlobalReferencesToggled) {
+        this.classList.remove('toggled');
+    } else {
+        this.classList.add('toggled');
+    }
+    references.forEach(reference => {
+        const questionCard = reference.closest('.question-card');
+        if (isGlobalReferencesToggled === isQuestionCardDisplayingReferences(questionCard)) {
+            toggleReferences(reference);
+        }
+    });
+});
 
 const CORRECT_ANSWER = 'correct';
 const WRONG_ANSWER = 'wrong';
@@ -44,7 +63,7 @@ function toggleAnswer(questionCard, displayAnswer) {
     });
 }
 
-function isQuestionCardAnswerDisplaying(questionCard) {
+function isQuestionCardDisplayingAnswer(questionCard) {
     const choices = questionCard.querySelectorAll('.choice input[type="checkbox"]');
     return Array.from(choices).some(choice =>
         [CORRECT_ANSWER, WRONG_ANSWER, MISSING_ANSWER].some(answer =>
@@ -56,7 +75,7 @@ function isQuestionCardAnswerDisplaying(questionCard) {
 document.querySelectorAll('.single-answer-toggle').forEach(toggle => {
     const questionCard = toggle.closest('.question-card');
     toggle.addEventListener('click', function() {
-        const isDisplayingAnswers = isQuestionCardAnswerDisplaying(questionCard);
+        const isDisplayingAnswers = isQuestionCardDisplayingAnswer(questionCard);
         toggleAnswer(questionCard, !isDisplayingAnswers);
         if (isDisplayingAnswers) {
             this.innerHTML = '<i class="fas fa-eye"></i>';
@@ -70,7 +89,7 @@ document.getElementById('toggle-button').addEventListener('click', function() {
     const isGlobalAnswerToggled = this.className.includes('toggled');
     const allSingleAnswerToggles = document.querySelectorAll('.single-answer-toggle');
     allSingleAnswerToggles.forEach(toggle => {
-        const questionCardAnswerToggled = isQuestionCardAnswerDisplaying(toggle.closest('.question-card'));
+        const questionCardAnswerToggled = isQuestionCardDisplayingAnswer(toggle.closest('.question-card'));
         if (questionCardAnswerToggled === isGlobalAnswerToggled) {
             toggle.click();
         }
